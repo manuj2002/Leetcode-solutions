@@ -19,7 +19,7 @@ public:
     vector<int> getNewsFeed(int userId) {
         vector<int>ans;
         int cnt=0;
-        queue<pair<int,int>>qu;
+        stack<pair<int,int>>qu;
         while(!news[userId].empty() && cnt<10 ){
             if(follower[userId][news[userId].top().first]==1||news[userId].top().first==userId){
                 pair<int,int>p=news[userId].top();
@@ -30,13 +30,14 @@ public:
             news[userId].pop();
         }
         while(!qu.empty()){
-            news[userId].push(qu.front());
+            news[userId].push(qu.top());
             qu.pop();
         }
+        return ans;
     }
     
     void follow(int followerId, int followeeId) {
-        follower[followeeId][followerId]=1
+        follower[followeeId][followerId]=1;
     }
     
     void unfollow(int followerId, int followeeId) {
