@@ -10,26 +10,32 @@ date: 2026-07-09
 # Analysis
 
 ### Verdict summary
-Your approach incorrectly aggregates tweets into each follower’s stack in `postTweet`, which does not scale and loses ordering after pops in `getNewsFeed`. The core idea is flawed—you need a global timestamp and merge recent tweets from followed users.
+The attempted approach uses a 2D adjacency matrix for follower relationships and a map of stacks to store tweets, which is fundamentally flawed. The `getNewsFeed` method fails to return the required vector, causing a compile error. Even if fixed, the design does not scale efficiently.
 
 ### Complexity
-- **Time**: `postTweet` O(500) per call (≈ O(1) but constant 500). `getNewsFeed` removes all tweets from a user’s stack each time, copying them via a queue for restoration, making it O(total tweets of followed users) per call.
-- **Space**: `news[user]` stack duplicates each tweet for all followers—O(N * F) where N is tweets, F is followers. Exceeds reasonable memory.
+- **Time Complexity**: 
+  - `postTweet`: O(U) where U=501 (fixed constant) due to fanout to all possible followers
+  - `getNewsFeed`: O(10) per tweet retrieval but restores the stack in O(10) using a queue
+  - `follow`/`unfollow`: O(1)
+- **Space Complexity**: O(U² + T) for the 501×501 matrix and map of stacks storing up to T tweets.
 
 ### vs. optimal
-Optimal design uses:
-- A global incremental timestamp.
-- For each user: a list/vector of their own tweets (with timestamp).
-- Follow relationships stored as a hash set per user.
-- `getNewsFeed`: collect the most recent 10 from the user + all followees by merging using a max-heap of iterators/linked-list pointers (k-way merge).  
-Complexity: `postTweet` O(1), `follow/unfollow` O(1), `getNewsFeed` O(10 log F) where F is number of followed users.
+The optimal solution uses:
+- A hash map storing each user's tweets as a linked list (or deque) with timestamps
+- A hash map storing each user's followees as a set
+- A max-heap (priority queue) to merge the most recent tweets from followees in `getNewsFeed`
 
-Your approach differs by duplicating tweets into follower stacks and scanning entire fixed-size matrices.
+**Complexity**: 
+- `postTweet`: O(1)
+- `getNewsFeed`: O(F log F) where F is number of followees (heap operations)
+- `follow`/`unfollow`: O(1)
+- Space: O(U + T)
+
+This submission differs by using inefficient fanout on every post and a stack that requires full reconstruction for news feed queries.
 
 ### Improvements
-1. **Fix `vecto` typo** (compile error): Line 2 should be `vector<vector<int>> follower;`.
-2. **Store tweets per user with timestamps**: Replace the map of stacks with `unordered_map<int, vector<pair<time_t, int>>> userTweets`, adding a global time counter.
-3. **Separate follow graph correctly**: Use `unordered_map<int, unordered_set<int>> following`. Your current matrix transposition and 500 limit are wasteful and incorrectly oriented.
-4. **Use max-heap for getNewsFeed**: Collect head tweets from user + followees, push (timestamp, tweetId, userId, index) into heap, pop top 10.
-5. **Missing semicolon** in `follow` method (line 48).
-6. **Remove redundant copying via queue**: In your `getNewsFeed`, you empty stack, push to queue, then restore. This is unnecessary with proper merge algorithm.
+1. **Missing return statement**: `getNewsFeed` must return `ans` (line 36).
+2. **Wrong unfollow logic**: Line 49 should set `follower[followeeId][followerId] = 0`.
+3. **Inefficient fanout**: Storing duplicate tweets for all followers wastes space. Instead, store tweets per user and merge during `getNewsFeed`.
+4. **Non-scalable design**: The fixed 501×501 matrix limits user IDs and wastes memory. Use `unordered_map<int, unordered_set<int>>` for follow relationships.
+5. **Stack misuse**: Stacks don't support efficient filtering. Use a list/deque with timestamps and a heap for merge k sorted lists.
