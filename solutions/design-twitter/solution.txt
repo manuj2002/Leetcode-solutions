@@ -21,7 +21,7 @@ public:
         int cnt=0;
         stack<pair<int,int>>qu;
         while(!news[userId].empty() && cnt<10 ){
-            if(follower[userId][news[userId].top().first]==1||news[userId].top().first==userId){
+            if(follower[news[userId].top().first][userId]==1||news[userId].top().first==userId){
                 pair<int,int>p=news[userId].top();
                 qu.push(p);
                 ans.push_back(p.second);
