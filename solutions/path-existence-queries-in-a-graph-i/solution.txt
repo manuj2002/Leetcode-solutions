@@ -1,0 +1,28 @@
+class Solution {
+public:
+    vector<bool> pathExistenceQueries(int n, vector<int>& nums, int maxDiff, vector<vector<int>>& queries) {
+        vector<int>segment(0,n);
+        int segmentId=0;
+        for(int i=1;i<nums.size();i++){
+            if(nums[i]-nums[i-1]>maxDiff){
+                segmentId++;
+            }
+            nums[i]=segmentId;
+        }
+        vecto<bool>ans;
+
+        for(auto e:queries){
+            if(e[0]==e[1]|| segment[e[0]]==segment[e[1]]){
+                ans.push_back(true);
+            }else{
+               ans.push_back(false); 
+            }
+           
+            
+            
+
+        }
+
+        return ans;
+    }
+};
