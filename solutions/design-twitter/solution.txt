@@ -1,0 +1,54 @@
+class Twitter {
+public:
+    vecto<vector<int>>follower
+    map<int,stack<pair<int,int>>>news;
+    Twitter() {
+        follower=vector<vector<int>>(501,vector<int>(501,0));
+    }
+    
+    void postTweet(int userId, int tweetId) {
+        news[userId].push({userId,tweetId});
+        for(int i=0;i<501;i++){
+            if(follower[userId][i]==1){
+                news[i].push({userId,tweetId});
+            }
+        }
+        return;
+    }
+    
+    vector<int> getNewsFeed(int userId) {
+        vector<int>ans;
+        int cnt=0;
+        queue<pair<int,int>>qu;
+        while(!news[userId].empty() && cnt<10 ){
+            if(follower[userId][news[userId].top().first]==1||news[userId].top().first==userId){
+                pair<int,int>p=news[userId].top();
+                qu.push(p);
+                ans.push_back(p.second);
+                cnt++;
+            }
+            news[userId].pop();
+        }
+        while(!qu.empty()){
+            news[userId].push(qu.front());
+            qu.pop();
+        }
+    }
+    
+    void follow(int followerId, int followeeId) {
+        follower[followeeId][followerId]=1
+    }
+    
+    void unfollow(int followerId, int followeeId) {
+         follower[followeeId][followeeId]=0;
+    }
+};
+
+/**
+ * Your Twitter object will be instantiated and called as such:
+ * Twitter* obj = new Twitter();
+ * obj->postTweet(userId,tweetId);
+ * vector<int> param_2 = obj->getNewsFeed(userId);
+ * obj->follow(followerId,followeeId);
+ * obj->unfollow(followerId,followeeId);
+ */
