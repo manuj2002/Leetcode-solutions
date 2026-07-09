@@ -2,34 +2,49 @@
 problem: "Two Sum"
 difficulty: unknown
 verdict: Accepted
-runtime: 5 ms
-memory: 16.2 MB
+runtime: 4 ms
+memory: 16.3 MB
 date: 2026-07-09
 ---
 
 # Analysis
 
-### Verdict summary
-The submission uses a hash map to find the complement of each element, which is the correct optimal approach. However, the implementation has inefficiencies that hurt performance.
+### Verdict Summary
+The submitted solution uses a hash map to store the last occurrence index of each number. It then performs a second pass to find the complement of each number, checking that the index differs. This general approach is correct for the two-sum problem, but the implementation has efficiency and correctness issues.
 
 ### Complexity
-- **Time Complexity:** O(n) - Each element is processed once (O(n)) and hash map operations are average O(1).
-- **Space Complexity:** O(n) - The unordered_map stores up to n elements.
+- **Time Complexity:** O(n) in the average case, but O(n²) worst-case if many hash collisions occur (though unlikely in practice with `std::map`'s O(log n) operations).
+- **Space Complexity:** O(n) for storing the hash map.
 
-### vs. optimal
-The optimal solution for this problem uses a single-pass hash table (exactly as implemented here conceptually). While the approach is optimal in theory, the implementation details make it slower than other O(n) solutions.
+### vs. Optimal
+The optimal approach for two-sum uses a single-pass hash map: while iterating, check if the complement exists in the map. If not, insert the current number. This yields O(n) time and O(n) space with better constant factors. The submission uses two passes and a less efficient `std::map` instead of `std::unordered_map`, making it suboptimal.
 
 ### Improvements
-1. **Use `unordered_map::find` instead of checking count then accessing:** The code does `if (mp.count(...))` followed by `mp[complement]`. This performs two lookups when one suffices. Replace with:
-   ```cpp
-   auto it = mp.find(complement);
-   if (it != mp.end()) return {it->second, i};
-   ```
-2. **Reserve map capacity:** The constraints state up to 10⁴ elements. Adding `mp.reserve(nums.size());` before the loop avoids rehashing overhead.
-3. **Avoid unnecessary `pair`/`vector` construction:** Returning `{it->second, i}` directly is more efficient than constructing a vector separately.
+1. **Use `std::unordered_map` instead of `std::map`:** `std::map` has O(log n) insert/lookup, while `std::unordered_map` has O(1) average-case operations.
+2. **Single-pass approach:** Avoid the second pass by checking for the complement during the initial iteration. This also handles cases where the complement might appear later without needing to enforce `x[y] != i` explicitly.
+3. **Avoid redundant vector allocation:** Initialize the result vector only when the solution is found, and return it directly instead of using a temporary.
+4. **Use `find()` instead of `contains()` for broader compiler compatibility (C++20 required for `contains`).**
 
-### Why the percentile is low
-The performance percentile is low because:
-- The double lookup (`count` followed by `[]`) adds significant overhead in a tight loop.
-- Lack of map capacity reservation causes unnecessary rehashing during insertion.
-- Faster solutions use single-lookup patterns and often pre-allocate the hash table’s capacity.
+Improved code:
+```cpp
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        unordered_map<int, int> seen;
+        for (int i = 0; i < nums.size(); ++i) {
+            int complement = target - nums[i];
+            if (seen.find(complement) != seen.end()) {
+                return {seen[complement], i};
+            }
+            seen[nums[i]] = i;
+        }
+        return {};
+    }
+};
+```
+
+### Why the Percentile Is Low
+The runtime percentile is low because:
+- **Two-pass logic:** The solution iterates twice over the array, increasing constant factors.
+- **Inefficient data structure:** `std::map` is slower than `std::unordered_map` for this use case.
+- **Late complement check:** The single-pass approach finds the solution earlier in many cases, reducing average runtime. Faster submissions use these optimizations.
