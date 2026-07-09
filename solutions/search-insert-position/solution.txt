@@ -7,7 +7,7 @@ public:
                 return i;
             }
             if(nums[i]<target){
-                ans=i;
+                ans=i+1;
             }
         }
         return ans;
