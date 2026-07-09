@@ -2,45 +2,41 @@
 problem: "Design Twitter"
 difficulty: unknown
 verdict: Accepted
-runtime: 2 ms
-memory: 10.5 MB
+runtime: 0 ms
+memory: 10.7 MB
 date: 2026-07-09
 ---
 
 # Analysis
 
-### Verdict Summary
-This implementation uses a brute-force approach where each user has their own stack of tweets, and when posting, the tweet is pushed to all followers' stacks. While accepted, this is inefficient and does not scale well with the constraints. The design is fundamentally flawed for a real-time system.
+### Verdict summary
+This implementation uses an unconventional approach that redundantly stores tweets in multiple stacks based on follower relationships. While it passes the given test cases due to the low constraints, the design is fundamentally inefficient and does not scale well. The approach is not optimal for real-world scenarios.
 
 ### Complexity
-- **Time Complexity**:  
-  - `postTweet`: O(n) where n = 500 (user count) — iterates over all users to push to followers.  
-  - `getNewsFeed`: O(n) for popping and repushing up to 10 tweets.  
-  - `follow`/`unfollow`: O(1) for matrix updates.  
-- **Space Complexity**: O(n²) for the follower matrix + O(n * t) for tweet storage (where t is total tweets per user).
+- **Time Complexity**: 
+  - `postTweet`: O(n) where n is the number of users (501 in this case)
+  - `getNewsFeed`: O(k) where k is the number of tweets popped (up to 10), but with expensive stack reconstruction.
+  - `follow`/`unfollow`: O(1)
+- **Space Complexity**: O(n² + t) where n=501 users and t is the total number of tweets (each tweet is stored in multiple stacks).
 
-### vs. Optimal
-The optimal approach uses:
-- A global timestamp to order tweets.
-- A hash map storing each user's tweets as a list (linked list preferred for merging).
-- A hash map storing each user's followees.
-- `getNewsFeed` merges tweets from followees using a max-heap (priority queue) of size ≤ 10.  
-**Complexity**:  
-- `postTweet`: O(1)  
-- `getNewsFeed`: O(f * log k) where f is followee count, k=10  
-- `follow`/`unfollow`: O(1)  
-This solution is optimal and scales to large inputs.
+### vs. optimal
+The optimal solution uses:
+- A global timestamp to track tweet recency
+- Separate storage for user tweets and follower graphs
+- A max-heap to merge recent tweets from followed users
+
+**Optimal complexities**:
+- `postTweet`: O(1)
+- `getNewsFeed`: O(f log f) where f is number of followed users
+- `follow`/`unfollow`: O(1)
+
+Your approach differs by redundantly copying tweets to follower stacks, causing O(n) `postTweet` and inefficient stack manipulation in `getNewsFeed`.
 
 ### Improvements
-1. **Replace stack with timestamped tweets**: Use a global counter and store `(time, tweetId, userId)` for ordering.  
-2. **Use adjacency list for followers**: Replace 500x500 matrix with `unordered_map<int, unordered_set<int>>` to save space.  
-3. **Merge feeds efficiently**: In `getNewsFeed`, use a heap to merge recent tweets from followees instead of storing all tweets per user.  
-4. **Fix unfollow bug**: Line 43 incorrectly sets `follower[followeeId][followeeId]=0`; it should be `follower[followeeId][followerId]=0`.  
-5. **Avoid redundant storage**: Don’t push tweets to all followers on `postTweet`; instead, aggregate during `getNewsFeed`.
+1. **Remove redundant tweet storage**: Instead of copying tweets to each follower's stack, maintain a global tweet list with timestamps and merge feeds on-demand.
+2. **Use proper data structures**: Replace the 501×501 follower matrix with `unordered_map<int, unordered_set<int>>` for sparse storage.
+3. **Avoid stack reconstruction**: The current `getNewsFeed` destructively pops and rebuilds the stack - use non-destructive iteration.
+4. **Add timestamp tracking**: Without timestamps, you cannot properly order tweets when merging multiple users' feeds.
 
-### Why the Percentile Is Low
-The runtime/memory percentiles are low because:  
-- `postTweet` does O(n) work unnecessarily, while optimal solutions do O(1).  
-- Space usage is excessive due to the matrix and redundant tweet storage.  
-- The feed retrieval is inefficiently implemented with stack popping/repushing instead of a heap merge.  
-Faster solutions aggregate tweets on-demand using heaps and avoid pre-distributing tweets to followers.
+### Why the percentile is low
+The low runtime percentile is deceptive - it's only "fast" because the constraints are small (501 users). The solution would fail with realistic user counts due to O(n) `postTweet` operations and excessive memory usage. Faster solutions use O(1) posting and merge feeds efficiently using heaps rather than storing redundant copies.
