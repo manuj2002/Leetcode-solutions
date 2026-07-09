@@ -3,43 +3,33 @@ problem: "Search Insert Position"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.3 MB
+memory: 13.6 MB
 date: 2026-07-09
 ---
 
 # Analysis
 
 ### Verdict summary
-
-The submitted code implements a linear scan through the array to find the target or its insertion position. While this solution is functionally correct and accepted, it violates the problem's explicit requirement of O(log n) runtime complexity. The linear scan results in O(n) time, which is inefficient for the constraints (n up to 10^4).
+The submission uses a linear scan with O(n) time complexity, which violates the requirement for O(log n) runtime. Although it passed due to the test cases being small, it is not the correct approach for the problem.
 
 ### Complexity
-
-- **Time Complexity:** O(n) — The loop iterates through the entire array in the worst case.
-- **Space Complexity:** O(1) — Only a fixed number of integer variables are used.
+- **Time complexity**: O(n) — The code performs a single pass through the entire array in the worst case.
+- **Space complexity**: O(1) — Only a constant amount of extra space is used.
 
 ### vs. optimal
-
-The known optimal approach is binary search, which achieves O(log n) runtime complexity by repeatedly halving the search space. The submitted linear scan is fundamentally different and suboptimal, as it does not leverage the sorted property of the array to reduce comparisons.
+The optimal solution uses binary search to achieve O(log n) time complexity, which is required by the problem. This solution uses a linear scan, which is inefficient for large inputs and fails to meet the problem constraints.
 
 ### Improvements
-
-1. **Replace linear scan with binary search.** This is the most critical improvement. The algorithm should maintain two pointers (`low` and `high`) and calculate a `mid` index to narrow the search range.
-   
-   Example binary search implementation:
-   ```cpp
-   int low = 0, high = nums.size() - 1;
-   while (low <= high) {
-       int mid = low + (high - low) / 2;
-       if (nums[mid] == target) return mid;
-       else if (nums[mid] < target) low = mid + 1;
-       else high = mid - 1;
-   }
-   return low;
-   ```
-
-2. **Use meaningful variable names.** `ans` is vague; `insertPos` would be clearer. However, the primary issue is algorithmic, not naming.
-
-### Why the percentile is low
-
-The runtime percentile is low because this solution runs in O(n) time, while faster submissions use binary search to achieve O(log n) time. For an array of size 10^4, binary search requires ~14 comparisons, whereas the linear scan may require up to 10,000. The performance gap is significant for larger inputs, even within the constraint limits.
+1. **Replace linear scan with binary search**: The entire loop should be replaced with a binary search implementation. Here’s an efficient binary search solution:
+```cpp
+int left = 0, right = nums.size() - 1;
+while (left <= right) {
+    int mid = left + (right - left) / 2;
+    if (nums[mid] == target) return mid;
+    if (nums[mid] < target) left = mid + 1;
+    else right = mid - 1;
+}
+return left;
+```
+2. **Unnecessary variable `ans`**: The current logic increments `ans` for every element less than `target`, which is redundant. The binary search above naturally finds the insert position without such tracking.
+3. **Early termination is insufficient**: Even though the loop breaks early if `target` is found, the worst-case scenario (inserting at the end) still requires a full scan. Binary search handles all cases efficiently.
