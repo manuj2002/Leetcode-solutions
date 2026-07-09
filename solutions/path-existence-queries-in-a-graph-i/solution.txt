@@ -1,13 +1,13 @@
 class Solution {
 public:
     vector<bool> pathExistenceQueries(int n, vector<int>& nums, int maxDiff, vector<vector<int>>& queries) {
-        vector<int>segment(0,n);
+        vector<int>segment(n,0);
         int segmentId=0;
         for(int i=1;i<nums.size();i++){
             if(nums[i]-nums[i-1]>maxDiff){
                 segmentId++;
             }
-            nums[i]=segmentId;
+            segment[i]=segmentId;
         }
         vector<bool>ans;
 
@@ -19,8 +19,6 @@ public:
             }
            
             
-            
-
         }
 
         return ans;
