@@ -1,6 +1,6 @@
 class Twitter {
 public:
-    vecto<vector<int>>follower
+    vector<vector<int>>follower;
     map<int,stack<pair<int,int>>>news;
     Twitter() {
         follower=vector<vector<int>>(501,vector<int>(501,0));
