@@ -9,7 +9,7 @@ public:
             }
             nums[i]=segmentId;
         }
-        vecto<bool>ans;
+        vector<bool>ans;
 
         for(auto e:queries){
             if(e[0]==e[1]|| segment[e[0]]==segment[e[1]]){
