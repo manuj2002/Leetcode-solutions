@@ -82,6 +82,10 @@ public:
                 continue;
             }
 
+            
+            int cur = l;
+            int steps = 0;
+
             for (int k = LOG - 1; k >= 0; k--) {
 
                 int nxt = jump[k][cur];
