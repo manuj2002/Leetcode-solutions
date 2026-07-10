@@ -9,22 +9,19 @@ date: 2026-07-10
 
 # Analysis
 
-### Verdict summary
-The approach correctly uses binary lifting for Kth ancestor queries, but the implementation contains critical errors: the `LOG` static variable isn't initialized, and the logic assumes valid ancestor indices when `jump = -1`. The runtime error is due to using `dp[i][ans]` when `ans = -1`.
+### Verdict summary  
+The submission attempts binary lifting (jumping ancestors in powers of two) but has critical indexing errors. The core idea is appropriate for the problem, but the implementation is flawed.
 
-### Complexity
-**Time:** Constructor: O(n log n), Query: O(log n).  
-**Space:** O(n log n) for the `dp` table.  
-This matches the intended complexities for the binary lifting approach.
+### Complexity  
+- **Time:** Constructor *O(n log n)*, getKthAncestor *O(log n)* — correct for binary lifting.  
+- **Space:** *O(n log n)* — standard for the DP table.
 
-### vs. optimal
-This problem's known optimal solution is binary jumping (binary lifting) with `dp[logMax][n]`. The complexity should be as above. However, the submitted code is not optimal because:
-1. It uses an unnecessarily large loop bound in `getKthAncestor` (up to `1<<LOG` instead of `LOG`).
-2. It does not handle jumps to non-existent ancestors correctly, causing illegal memory access when `node = -1` is passed as an index to `dp`.
+### vs. optimal  
+The binary lifting approach is optimal for this problem (time *O(log n)* per query, space *O(n log n)*). However, the code’s DP table construction is wrong: it accesses `dp[i-1][j]` where `dp[i-1][j]` could be `-1`, causing out-of-bounds vector access later and an eventual overflow error.
 
-### Improvements
-1. **Initialize `LOG`** and make it non‑static: In the class, `int LOG = 0;` must be initialized. As static, it retains value across multiple test cases, causing wrong calculation.
-2. **Check for -1 during jumps**: In both preprocessing and query, when `dp[i-1][j] == -1`, the next jump `dp[i][j]` should also be -1, not `dp[i-1][-1]`.
-3. **Fix loop in `getKthAncestor`**: Change `for(int i=(1<<LOG);i>=0;i--)` to `for(int i=LOG;i>=0;i--)`. Otherwise, the shift exponent becomes huge/negative.
-4. **Early exit in query**: If `ans` becomes -1 at any step, return -1 immediately.
-5. **Use `parent.size()`**: In constructor, `n` can be replaced by `parent.size()` to avoid param duplication.
+### Improvements  
+1. **Index bounds check** — the line `dp[i][j] = dp[i-1][dp[i-1][j]]` must first ensure `dp[i-1][j] != -1`; else keep `dp[i][j] = -1`.  
+2. **LOG calculation** — `while((1<<LOG) <= n)` actually computes `LOG = floor(log2(n)) + 1`, but the loop in `getKthAncestor` should iterate from `LOG-1` down to `0`, not from `1<<LOG` (which is ~n). Use `for(i = LOG; i >= 0; i--)` with `if(k & (1<<i))`.  
+3. **Off-by-one in DP dimensions** — DP size `LOG+1` is fine, but initialize rows for `i=1..LOG-1` not `LOG`? Actually `i` should go to `LOG-1` in constructor if 0‑indexing `dp[0]` as direct parents.  
+4. **Use of (1<<i) in query loop** — `1<<i` when `i = LOG` can be larger than `INT_MAX` if `LOG` large; safer to define `MAX_LOG = ceil(log2(n))` and iterate `for(int i = MAX_LOG; i >= 0; i--)`.  
+5. **Redundant storage of `dp[0][j]`** — You could store `dp[0] = parent`, but careful with `-1` as done.
