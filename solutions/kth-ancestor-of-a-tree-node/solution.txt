@@ -3,7 +3,8 @@ public:
 int LOG;
 vector<vector<int>>dp;
     TreeAncestor(int n, vector<int>& parent) {
-        while((1<<LOG)<n){
+        LOG=0;
+        while((1<<LOG)<=n){
             LOG++;
         }
         dp=vector<vector<int>>(LOG+1,vector<int>(n,-1));
