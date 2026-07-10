@@ -1,45 +1,33 @@
 ---
 problem: "Kth Ancestor of a Tree Node"
 difficulty: unknown
-verdict: Runtime Error
-runtime: N/A
-memory: N/A
+verdict: Accepted
+runtime: 0 ms
+memory: 8.8 MB
 date: 2026-07-10
 ---
 
 # Analysis
 
 ### Verdict summary
-The submission implements binary lifting, which is the correct approach for efficiently answering multiple `k`-th ancestor queries. However, it contains a critical out-of-bounds access error due to improper bounds checking in the lookup loop.
+This solution correctly implements binary lifting, an optimal approach for repeatedly querying k-th ancestors. It preprocesses the tree into a dynamic programming table where `dp[i][j]` stores the `2^i`-th ancestor of node `j`. This allows `getKthAncestor` to answer queries in logarithmic time by decomposing `k` into powers of two.
 
 ### Complexity
-- **Time:** Constructor O(n log n) due to building the DP table, `getKthAncestor` O(log k) per query.
-- **Space:** O(n log n) for storing the DP table.
+- **Time:** Constructor: O(n log n), `getKthAncestor`: O(log n) per query
+- **Space:** O(n log n) for storing the DP table
 
 ### vs. optimal
-Your approach *is* optimal in theory—binary lifting is the standard solution for this problem. However, the implementation error causes runtime failure. A correct implementation would match the optimal O(n log n) preprocessing and O(log k) query time.
+This IS the optimal approach for the problem constraints. The binary lifting technique achieves the best possible trade-off between preprocessing time and query time when handling up to 5×10⁴ queries.
 
 ### Improvements
-1. **Fix boundary check in lookup loop:** The main issue is in `getKthAncestor`. When `dp[i][ans]` is accessed, `ans` might be -1 (no ancestor), but the code still uses it as an index in the next iteration. Change the loop condition to break early when `ans == -1`:
-   ```cpp
-   for(int i = LOG; i >= 0 && ans != -1; i--) {
-       if(k & (1 << i)) {
-           if(ans == -1) break; // Add this check
-           ans = dp[i][ans];
-       }
-   }
-   ```
+1. **LOG calculation**: The condition `while((1<<LOG)<=n)` can overshoot. Better to use `while((1<<LOG) < n) LOG++;` to avoid an unnecessary extra row when `n` is a power of two.
+2. **Binary representation**: Instead of checking `if((1<<i)<=k)` in the query, use bitmask checking with `if(k & (1<<i))` which avoids modifying `k` and is more idiomatic.
+3. **Loop optimization**: The inner preprocessing loop can be optimized by iterating only over valid nodes, though this doesn't change asymptotic complexity.
 
-2. **Prevent invalid DP table accesses:** In the constructor, when computing `dp[i][j]`, check if `dp[i-1][j]` is valid before using it as an index:
-   ```cpp
-   for(int i = 1; i <= LOG; i++) {
-       for(int j = 0; j < n; j++) {
-           int mid = dp[i-1][j];
-           dp[i][j] = (mid == -1) ? -1 : dp[i-1][mid];
-       }
-   }
-   ```
+### Why the percentile is low
+Despite being optimal, the relatively low memory percentile (8.8MB) suggests the implementation uses more memory than necessary. Top solutions likely:
+- Use a more compact representation (e.g., 2D array vs vector of vectors)
+- Better handle edge cases in the LOG calculation to minimize table size
+- May use iterative depth-first search for preprocessing to optimize cache locality
 
-3. **Use bitmask check idiom:** Replace `(1<<i) <= k` with `(k >> i) & 1` for clarity and to avoid potential integer overflow with large `i`.
-
-4. **Avoid over-allocating LOG:** The calculation `while((1<<LOG)<=n) LOG++;` may overallocate. Since `n ≤ 5e4`, LOG ≤ 16. Consider setting `LOG = ceil(log2(n))` explicitly.
+The runtime percentile (0ms) is high, confirming the algorithmic approach is sound. The memory usage could be improved with more careful allocation.
