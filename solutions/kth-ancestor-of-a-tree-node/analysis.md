@@ -3,31 +3,30 @@ problem: "Kth Ancestor of a Tree Node"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.8 MB
+memory: 8.5 MB
 date: 2026-07-10
 ---
 
 # Analysis
 
 ### Verdict summary
-This solution correctly implements binary lifting, an optimal approach for repeatedly querying k-th ancestors. It preprocesses the tree into a dynamic programming table where `dp[i][j]` stores the `2^i`-th ancestor of node `j`. This allows `getKthAncestor` to answer queries in logarithmic time by decomposing `k` into powers of two.
+The solution correctly implements binary lifting to handle kth ancestor queries efficiently. It precomputes ancestors at powers of two and walks up the tree in O(log n) per query, which is the expected approach for this problem.
 
 ### Complexity
-- **Time:** Constructor: O(n log n), `getKthAncestor`: O(log n) per query
-- **Space:** O(n log n) for storing the DP table
+- **Time:** Construction O(n log n), Query O(log k) (or O(log n) in the worst case).
+- **Space:** O(n log n), from the `dp` table of size (LOG+1) × n.
 
 ### vs. optimal
-This IS the optimal approach for the problem constraints. The binary lifting technique achieves the best possible trade-off between preprocessing time and query time when handling up to 5×10⁴ queries.
+This **is optimal** for this problem. The binary lifting technique is the standard solution for kth ancestor queries online, with O(n log n) preprocessing and O(log n) per query, matching known optimal bounds.
 
 ### Improvements
-1. **LOG calculation**: The condition `while((1<<LOG)<=n)` can overshoot. Better to use `while((1<<LOG) < n) LOG++;` to avoid an unnecessary extra row when `n` is a power of two.
-2. **Binary representation**: Instead of checking `if((1<<i)<=k)` in the query, use bitmask checking with `if(k & (1<<i))` which avoids modifying `k` and is more idiomatic.
-3. **Loop optimization**: The inner preprocessing loop can be optimized by iterating only over valid nodes, though this doesn't change asymptotic complexity.
+1. **LOG calculation efficiency:** `while ((1 << LOG) <= n)` can be replaced with `LOG = __lg(n) + 1;` (using bit width) or `LOG = floor(log2(n)) + 1;` to compute it directly instead of a loop.
+2. **Inconsistent LOG usage:** Setting `LOG` to `ceil(log2(n))` is sufficient; currently the loop increments until `(1 << LOG) > n`, then uses `LOG` unchanged. The final `(1 << LOG)` exceeds n, but the code still loops to `<= LOG` in queries. This works but is slightly larger than needed. Precisely, `LOG = __lg(n) + 1;` is enough.
+3. **Potential minor speed-up:** In `getKthAncestor`, iterate over bits while checking `k` directly: `if (k & (1 << i)) ans = dp[i][ans];` instead of subtracting. This avoids modifying `k` and is clearer.
 
 ### Why the percentile is low
-Despite being optimal, the relatively low memory percentile (8.8MB) suggests the implementation uses more memory than necessary. Top solutions likely:
-- Use a more compact representation (e.g., 2D array vs vector of vectors)
-- Better handle edge cases in the LOG calculation to minimize table size
-- May use iterative depth-first search for preprocessing to optimize cache locality
-
-The runtime percentile (0ms) is high, confirming the algorithmic approach is sound. The memory usage could be improved with more careful allocation.
+The runtime and memory values provided are "beats —" (i.e., no percentile shown). If slow, common micro-optimizations include:
+- Allocating `dp` as a single vector of size (LOG+1)*n and computing indices manually to reduce allocation overhead.
+- Using `int` instead of `vector<int>` for each row if LOG is small.
+- Using `std::bitset` or iterative bit checks without subtraction in the query loop for branch prediction.
+- Using `parent` directly as the first row to avoid copy (but the assignment `dp[0][i]=parent[i]` already copies). If parent is already stored separately, you could skip `dp[0]` by referencing it dynamically, but that adds checks.
