@@ -10,45 +10,36 @@ date: 2026-07-10
 # Analysis
 
 ### Verdict summary
-The submission implements binary lifting correctly in concept, but contains an indexing error causing buffer overflow. The approach is appropriate for handling multiple queries efficiently, but the implementation is flawed.
+The submission implements binary lifting, which is the correct approach for efficiently answering multiple `k`-th ancestor queries. However, it contains a critical out-of-bounds access error due to improper bounds checking in the lookup loop.
 
 ### Complexity
-- **Time complexity**: Constructor O(n log n), getKthAncestor O(log k)
-- **Space complexity**: O(n log n) for the DP table
+- **Time:** Constructor O(n log n) due to building the DP table, `getKthAncestor` O(log k) per query.
+- **Space:** O(n log n) for storing the DP table.
 
 ### vs. optimal
-This is the optimal approach for this problem. Binary lifting preprocesses ancestor information in logarithmic steps, allowing each query to be answered in O(log k) time. However, the implementation fails to handle edge cases where intermediate ancestors don't exist.
+Your approach *is* optimal in theory—binary lifting is the standard solution for this problem. However, the implementation error causes runtime failure. A correct implementation would match the optimal O(n log n) preprocessing and O(log k) query time.
 
 ### Improvements
-1. **Fix index out-of-bounds access**: In `getKthAncestor`, when `dp[i][ans] == -1`, the function should return -1 immediately instead of continuing. Also, the loop should check bounds before accessing `dp[i][ans]`.
-2. **Correct DP table dimensions**: The constructor initializes with `LOG+1` rows, but the loop runs `for(int i=1;i<LOG;i++)`, missing the last row. It should be `for(int i=1;i<=LOG;i++)`.
-3. **Bounds checking in constructor**: When computing `dp[i][j] = dp[i-1][dp[i-1][j]]`, verify that `dp[i-1][j]` is not -1 first.
-4. **Use unsigned integers carefully**: Avoid potential overflow in the logarithm calculation by using integer arithmetic more carefully.
+1. **Fix boundary check in lookup loop:** The main issue is in `getKthAncestor`. When `dp[i][ans]` is accessed, `ans` might be -1 (no ancestor), but the code still uses it as an index in the next iteration. Change the loop condition to break early when `ans == -1`:
+   ```cpp
+   for(int i = LOG; i >= 0 && ans != -1; i--) {
+       if(k & (1 << i)) {
+           if(ans == -1) break; // Add this check
+           ans = dp[i][ans];
+       }
+   }
+   ```
 
-Here's the corrected main logic:
-```cpp
-int getKthAncestor(int node, int k) {
-    int ans = node;
-    for(int i = LOG; i >= 0; i--) {
-        if(k >= (1 << i)) {
-            if(dp[i][ans] == -1) return -1;
-            ans = dp[i][ans];
-            k -= (1 << i);
-        }
-    }
-    return ans;
-}
-```
+2. **Prevent invalid DP table accesses:** In the constructor, when computing `dp[i][j]`, check if `dp[i-1][j]` is valid before using it as an index:
+   ```cpp
+   for(int i = 1; i <= LOG; i++) {
+       for(int j = 0; j < n; j++) {
+           int mid = dp[i-1][j];
+           dp[i][j] = (mid == -1) ? -1 : dp[i-1][mid];
+       }
+   }
+   ```
 
-And in the constructor:
-```cpp
-for(int i = 1; i <= LOG; i++) {
-    for(int j = 0; j < n; j++) {
-        if(dp[i-1][j] == -1) {
-            dp[i][j] = -1;
-        } else {
-            dp[i][j] = dp[i-1][dp[i-1][j]];
-        }
-    }
-}
-```
+3. **Use bitmask check idiom:** Replace `(1<<i) <= k` with `(k >> i) & 1` for clarity and to avoid potential integer overflow with large `i`.
+
+4. **Avoid over-allocating LOG:** The calculation `while((1<<LOG)<=n) LOG++;` may overallocate. Since `n ≤ 5e4`, LOG ≤ 16. Consider setting `LOG = ceil(log2(n))` explicitly.
