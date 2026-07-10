@@ -1,0 +1,101 @@
+class Solution {
+public:
+    vector<int> pathExistenceQueries(int n, vector<int>& nums, int maxDiff, vector<vector<int>>& queries) {
+        vector<vector<int>>nodes;
+        for(int i=0;i<n;i++){
+            vector<int>p;
+            p.push_back(nums[i]);
+             p.push_back(i);
+             nodes.push_back(p);
+        }
+        sort(nodes.begin(),nodes.end());
+        int graphNo=0;
+        map<int,int>nodeLocation;
+        vector<int>graphSet(n,0);
+        for(int i=1;i<nodes.size();i++){
+            if(nodes[i][0]-nodes[i-1][0]>maxDiff){
+                graphNo++;
+            }
+            graphSet[nodes[i][1]]=graphNo;
+            nodeLocation[nodes[i][1]]=i;
+        }
+          vector<int> next(n);
+
+        int r = 0;
+
+        for (int i = 0; i < n; i++) {
+
+            r = max(r, i);
+
+            while (
+                r + 1 < n &&
+                (long long)nodes[r + 1][0] - nodes[i][0]<= maxDiff
+            ) {
+                r++;
+            }
+
+            next[i] = r;
+        }
+
+        // -----------------------------------
+        // Step 2: build binary lifting table
+        // -----------------------------------
+
+        int LOG = 1;
+
+        while ((1 << LOG) <= n) {
+            LOG++;
+        }
+
+        vector<vector<int>> jump(
+            LOG,
+            vector<int>(n)
+        );
+
+        // 1 jump
+        for (int i = 0; i < n; i++) {
+            jump[0][i] = next[i];
+        }
+
+        // 2, 4, 8, 16... jumps
+        for (int k = 1; k < LOG; k++) {
+
+            for (int i = 0; i < n; i++) {
+
+                jump[k][i] =
+                    jump[k - 1][jump[k - 1][i]];
+            }
+        }
+    
+
+        vector<int>ans;
+        for(auto e:queries){
+            if(graphSet[e[0]]!=graphSet[e[1]]){
+                ans.push_back(-1);
+                continue;
+            }
+            int l=min(nodeLocation[e[0]],nodeLocation[e[1]]);
+            int r=max(nodeLocation[e[0]],nodeLocation[e[1]]);
+
+            if (l == r) {
+                ans.push_back(0);
+                continue;
+            }
+
+            for (int k = LOG - 1; k >= 0; k--) {
+
+                int nxt = jump[k][cur];
+
+                if (nxt < r) {
+                    cur = nxt;
+                    steps += (1 << k);
+                }
+            }
+
+            // final jump reaches target
+            ans.push_back(steps + 1);
+        }
+
+        return ans;
+    }
+};
