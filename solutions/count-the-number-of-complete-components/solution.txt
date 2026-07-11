@@ -28,6 +28,7 @@ public:
                 }
 
                 bool isConnected=true;
+                cout<<nx<<nedl;
                 while(!qx.empty()){
                     cout<<qx.front()<<" "<<adj[qx.front()].size()<<endl;
                     if(nx-1!=adj[qx.front()].size()){
