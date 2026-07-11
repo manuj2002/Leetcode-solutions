@@ -1,27 +1,30 @@
 ---
 problem: "Count the Number of Complete Components"
 difficulty: unknown
-verdict: Compile Error
-runtime: N/A
-memory: N/A
+verdict: Accepted
+runtime: 0 ms
+memory: 8.6 MB
 date: 2026-07-11
 ---
 
 # Analysis
 
-### Verdict summary
-The code attempts to use BFS to traverse connected components and check if each component is complete by comparing the degree of every node to the component size minus one. However, the implementation contains a compile error and fails to correctly identify complete components in cases where degrees are consistent but edges are missing between non-adjacent nodes.
+### Verdict summary  
+The approach finds connected components via BFS, then checks if each component is a complete graph by comparing every vertex’s degree to `component_size – 1`. This works but is inefficient in structure and contains redundant output and data structures, though the core idea is correct.
 
-### Complexity
-The current code would have O(n + m) time complexity and O(n) space complexity for BFS traversal if corrected, where n is the number of nodes and m is the number of edges. The degree check for each node is O(1) per node.
+### Complexity  
+**Time:** O(n + m) where m = number of edges, due to BFS traversal and degree checks per component.  
+**Space:** O(n + m) for adjacency list, plus O(n) for queues and frequency array.
 
-### vs. optimal
-The optimal approach for this problem uses union-find or DFS/BFS to identify connected components, then verifies completeness by checking if the number of edges in the component equals k*(k-1)/2 for a k-node component. This code incorrectly assumes that every node having degree (k-1) implies a complete graph, which is true for simple graphs, but the implementation error (using a queue that doesn't track visited nodes properly and the compile error) prevents correct execution.
+### vs. optimal  
+The optimal approach is BFS/DFS or union-find to find components, then verify that each component of size `k` has exactly `k*(k-1)/2` edges. This avoids per-vertex degree checks and uses edge counts. Your method does per-vertex degree checks which is fine asymptotically, but the edge-count method is simpler and less error-prone.
 
-### Improvements
-1. Fix the compile error: Replace `cout<<nx<<nedl;` with `cout<<nx<<endl;` or remove the debug output entirely.
-2. Correct the visited marking: The code sets `fre[e]=1` when enqueueing but never marks `fre[i]` for the starting node. Initialize `fre[i]=1` before pushing.
-3. Use a visited set properly: Instead of relying on `fre` for marking, use a dedicated visited array and mark nodes when they are first discovered.
-4. Use the correct completeness check: For a component of size k, the number of edges should be exactly k*(k-1)/2. Count edges within the component (by iterating over nodes and their neighbors) instead of just checking degrees.
-5. Avoid unnecessary data structures: The `qx` queue is redundant; collect nodes in a list during BFS instead of using a second queue.
-6. Prefer vector over map for adjacency list: Since n is only 50, use `vector<vector<int>> adj(n)` instead of a map for efficiency and clarity.
+### Improvements  
+1. **Remove unnecessary `cout` statements** — lines like `cout<<...` slow down runtime and serve no purpose.  
+2. **Replace `fre` array with a boolean visited array** — using `-1`/`1` is misleading; `vector<bool>` would be clearer.  
+3. **Use adjacency adjacency list more idiomatically** — `map<int,vector<int>>` is overkill; `vector<vector<int>> adj(n)` is fixed-size and faster.  
+4. **Merge BFS and degree checking** — compute component vertices and their degrees in a single pass, avoiding a second queue `qx` (just store vertices in a vector during BFS).  
+5. **Simplify complete-check logic** — instead of checking `nx-1 != adj[...].size()`, count edges in component and compare to `nx*(nx-1)/2`.
+
+### Why the percentile is low  
+The solution unnecessarily uses `map` instead of `vector` for adjacency, includes debug output, and recomputes degree checks per vertex separately. Faster solutions precompute edges per component via union-find or adjacency matrix, then verify clique condition directly without per-vertex loops inside the BFS.
