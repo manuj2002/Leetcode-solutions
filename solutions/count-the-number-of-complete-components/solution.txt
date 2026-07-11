@@ -28,11 +28,13 @@ public:
                 }
 
                 bool isConnected=true;
-                for(!qx.empty()){
+                while(!qx.empty()){
+                    cout<<qx.front()<<" "<<adj[qx.front()].size()<<endl;
                     if(nx-1!=adj[qx.front()].size()){
                          isConnected=false;
                          break;
                     }
+                    qx.pop();
                 }
                 if(isConnected){
                     ans++;
