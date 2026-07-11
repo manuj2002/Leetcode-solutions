@@ -1,29 +1,27 @@
 ---
 problem: "Count the Number of Complete Components"
 difficulty: unknown
-verdict: Accepted
-runtime: 2 ms
-memory: 8.3 MB
+verdict: Compile Error
+runtime: N/A
+memory: N/A
 date: 2026-07-11
 ---
 
 # Analysis
 
 ### Verdict summary
-The code uses BFS to find connected components and checks if each component is complete by verifying if every vertex has degree equal to component size minus one. This is the correct overall approach to solve the problem.
+The code attempts to use BFS to traverse connected components and check if each component is complete by comparing the degree of every node to the component size minus one. However, the implementation contains a compile error and fails to correctly identify complete components in cases where degrees are consistent but edges are missing between non-adjacent nodes.
 
 ### Complexity
-- **Time:** O(n + m) where m is the number of edges, but the adjacency map uses vectors and scanning all vertices for degree checking does O(n) per BFS run, leading to O(n²) worst case due to repeated scanning of vertices.
-- **Space:** O(n + m) for the adjacency map and BFS queues. The `fre` array takes O(n).
+The current code would have O(n + m) time complexity and O(n) space complexity for BFS traversal if corrected, where n is the number of nodes and m is the number of edges. The degree check for each node is O(1) per node.
 
 ### vs. optimal
-The known optimal approach is to compute component vertices via DFS/BFS or union-find, count vertices and edges within each component, then check if `edge_count == (vertices * (vertices - 1) / 2)` for completeness. This avoids repeatedly scanning adjacency lists per vertex within a component, achieving O(n + m) time. Your approach does O(n + m) for traversal but then does a linear scan over each component’s vertices, each checking adjacency size, which is okay but less direct than counting edges.
+The optimal approach for this problem uses union-find or DFS/BFS to identify connected components, then verifies completeness by checking if the number of edges in the component equals k*(k-1)/2 for a k-node component. This code incorrectly assumes that every node having degree (k-1) implies a complete graph, which is true for simple graphs, but the implementation error (using a queue that doesn't track visited nodes properly and the compile error) prevents correct execution.
 
 ### Improvements
-1. **Edge counting:** Instead of checking `nx-1 == adj[qx.front()].size()` for each vertex, count actual unique edges per component during BFS/DFS and compare to `nx*(nx-1)/2` for completeness. This avoids issues if edges are directed incorrectly in adjacency logic and is cleaner.
-2. **Data structures:** Use `vector<unordered_set<int>>` or `vector<vector<int>>` with fixed size `n` instead of `map<int,vector<int>>` for O(1) lookups and better cache locality.
-3. **BFS iteration:** The BFS marks `fre[e]=1` when pushing but marks the start vertex late; better to mark `fre[i]=1` before BFS to avoid duplicate pushes.
-4. **Queue duplication:** Storing vertices in `qx` is redundant; store vertices in a `vector<int>` during BFS for simpler iteration.
-
-### Why the percentile is low
-Faster solutions use union-find to group vertices and a separate `edges_in_component` count; they iterate over `edges` once to union vertices and increment edge count per component, then check completeness with one calculation per component. This avoids building full adjacency lists and redundant BFS degree checks, reducing constant factors and memory overhead.
+1. Fix the compile error: Replace `cout<<nx<<nedl;` with `cout<<nx<<endl;` or remove the debug output entirely.
+2. Correct the visited marking: The code sets `fre[e]=1` when enqueueing but never marks `fre[i]` for the starting node. Initialize `fre[i]=1` before pushing.
+3. Use a visited set properly: Instead of relying on `fre` for marking, use a dedicated visited array and mark nodes when they are first discovered.
+4. Use the correct completeness check: For a component of size k, the number of edges should be exactly k*(k-1)/2. Count edges within the component (by iterating over nodes and their neighbors) instead of just checking degrees.
+5. Avoid unnecessary data structures: The `qx` queue is redundant; collect nodes in a list during BFS instead of using a second queue.
+6. Prefer vector over map for adjacency list: Since n is only 50, use `vector<vector<int>> adj(n)` instead of a map for efficiency and clarity.
