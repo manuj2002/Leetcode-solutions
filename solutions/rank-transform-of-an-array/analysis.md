@@ -1,44 +1,35 @@
 ---
 problem: "Rank Transform of an Array"
 difficulty: unknown
-verdict: Compile Error
-runtime: N/A
-memory: N/A
+verdict: Accepted
+runtime: 19 ms
+memory: 39.9 MB
 date: 2026-07-12
 ---
 
 # Analysis
 
 ### Verdict summary
-The approach attempts to sort pairs of indices and values to assign ranks, but it has a critical error in accessing the sorted vector. The idea is correct but the implementation is flawed.
+The solution correctly sorts pairs of (value, index) to assign ranks. It is an optimal approach that efficiently handles duplicate values by comparing adjacent elements during the rank assignment.
 
 ### Complexity
-Time: O(n log n) from sorting. Space: O(n) for storing pairs.
+- **Time complexity:** O(n log n) due to sorting the array of size n.  
+- **Space complexity:** O(n) for storing the pairs and the result vector.
 
 ### vs. optimal
-The optimal approach sorts unique values to assign ranks, using a hash map for lookup. This code's method is conceptually correct but fails due to incorrect indexing and rank assignment logic.
+This **is the optimal solution** for the problem. The standard approach requires sorting the values while tracking original indices, then assigning ranks in a single pass. The solution achieves the best possible time complexity for this problem, as sorting is necessary to determine relative ordering.
 
 ### Improvements
-1. **Line 16**: `ar.first` should be `ar[i].first` to access the original index.
-2. **Rank assignment logic**: The current condition `if(i-1>=0 && ar[i-1].second==ar[i].second)` increments `j` incorrectly. Instead, compare with the previous element and only increment when values differ.
-3. **Sorting**: Sort by value instead of index? Actually, the pairs are created as `(index, value)`, but then sorted by index (default pair comparison), which is wrong. Should sort by value: use `sort(ar.begin(), ar.end(), [](auto& a, auto& b) { return a.second < b.second; });`.
-4. **Efficiency**: Avoid storing indices; instead, sort the array and use a map for ranks, then reconstruct. This reduces overhead.
+1. **Avoid redundant pairs vector:** Instead of creating a vector of pairs, use an index array and sort it using a custom comparator that references the original `arr`.  
+   ```cpp
+   vector<int> idx(n);
+   iota(idx.begin(), idx.end(), 0);
+   sort(idx.begin(), idx.end(), [&](int a, int b) { return arr[a] < arr[b]; });
+   ```
+   This avoids storing duplicate values and reduces memory overhead.
 
-Revised code:
-```cpp
-vector<int> arrayRankTransform(vector<int>& arr) {
-    vector<int> sorted = arr;
-    sort(sorted.begin(), sorted.end());
-    unordered_map<int, int> rank;
-    int r = 1;
-    for (int num : sorted) {
-        if (rank.find(num) == rank.end()) {
-            rank[num] = r++;
-        }
-    }
-    for (int& num : arr) {
-        num = rank[num];
-    }
-    return arr;
-}
-```
+2. **Simplify rank assignment logic:** Initialize `rank = 0` and increment only when encountering a new value. The current logic with `j` is correct but could be clearer by incrementing after assigning the rank for the first occurrence of a value.
+
+3. **Use emplace_back for efficiency:** When building the pairs vector, `emplace_back(arr[i], i)` avoids creating temporary pairs and is more efficient than `push_back({arr[i], i})`.
+
+4. **Preallocate and avoid resizing:** The `ans` vector is correctly sized initially, but ensure no further reallocations occur by using `reserve` for the pairs vector if the size is known.
