@@ -10,19 +10,35 @@ date: 2026-07-12
 # Analysis
 
 ### Verdict summary
-The approach intends to sort pairs of (index, value) to assign ranks, which is a valid way to handle the problem. However, the implementation has multiple syntax errors and logical flaws that cause it to be incorrect even if compiled.
+The approach attempts to sort pairs of indices and values to assign ranks, but it has a critical error in accessing the sorted vector. The idea is correct but the implementation is flawed.
 
 ### Complexity
-Assuming the syntax errors are fixed and the algorithm is corrected, time complexity would be O(n log n) due to sorting, and space complexity would be O(n) for storing pairs and the result.
+Time: O(n log n) from sorting. Space: O(n) for storing pairs.
 
 ### vs. optimal
-The optimal approach is: copy and deduplicate `arr` → sort unique values → map each original value to its index in sorted unique values + 1. Complexity O(n log n) time, O(n) space. Your current approach is unnecessarily complicated because you're storing indices and trying to assign ranks in a single sorted pass while incorrectly handling duplicate values and index retrieval.
+The optimal approach sorts unique values to assign ranks, using a hash map for lookup. This code's method is conceptually correct but fails due to incorrect indexing and rank assignment logic.
 
 ### Improvements
-1. **Compilation error**: On line 5, `vector<pair<int,int>>>ar;` has an extra `>` — should be `vector<pair<int,int>> ar;`.
+1. **Line 16**: `ar.first` should be `ar[i].first` to access the original index.
+2. **Rank assignment logic**: The current condition `if(i-1>=0 && ar[i-1].second==ar[i].second)` increments `j` incorrectly. Instead, compare with the previous element and only increment when values differ.
+3. **Sorting**: Sort by value instead of index? Actually, the pairs are created as `(index, value)`, but then sorted by index (default pair comparison), which is wrong. Should sort by value: use `sort(ar.begin(), ar.end(), [](auto& a, auto& b) { return a.second < b.second; });`.
+4. **Efficiency**: Avoid storing indices; instead, sort the array and use a map for ranks, then reconstruct. This reduces overhead.
 
-2. **Incorrect sorting**: The current `sort` compares pairs by index first (since `pair`’s default comparison uses `first`), but you need to sort by the element value. Use `sort(ar.begin(), ar.end(), [](auto& a, auto& b){ return a.second < b.second; });`.
-
-3. **Rank assignment logic**: The rank `j` incrementation is backwards — when values are equal, rank should *not* increase. Also, you refer to `ar.first` which doesn't exist; should be `ans[ar[i].first] = j;`. A corrected version should track the previous value and increment rank only when the current value is larger, not equal.
-
-4. **Redundant storage**: Instead of storing (index, value) for all elements, you can simply sort a copy of `arr` and build a hash map from value to rank, then map the original array. This is cleaner, reduces bugs, and matches the optimal method described above.
+Revised code:
+```cpp
+vector<int> arrayRankTransform(vector<int>& arr) {
+    vector<int> sorted = arr;
+    sort(sorted.begin(), sorted.end());
+    unordered_map<int, int> rank;
+    int r = 1;
+    for (int num : sorted) {
+        if (rank.find(num) == rank.end()) {
+            rank[num] = r++;
+        }
+    }
+    for (int& num : arr) {
+        num = rank[num];
+    }
+    return arr;
+}
+```
