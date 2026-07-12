@@ -1,0 +1,21 @@
+class Solution {
+public:
+    vector<int> arrayRankTransform(vector<int>& arr) {
+        int n=arr.size();
+        vector<pair<int,int>>>ar;
+        for(int i=0;i<n;i++){
+            ar.push_back({i,arr[i]});
+        }
+        sort(ar.begin(),ar.end());
+        int j=1;
+        vector<int>ans(n,0);
+        for(int i=0;i<n;i++){
+            if(i-1>=0 && ar[i-1].second==ar[i].second){
+                j++;
+            }
+            ans[ar.first]=j;
+        }
+
+        return ans;
+    }
+};
