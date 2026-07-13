@@ -3,45 +3,44 @@ problem: "Sequential Digits"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8 MB
+memory: 8.1 MB
 date: 2026-07-13
 ---
 
 # Analysis
 
 ### Verdict summary
-The submission attempts to generate sequential numbers by constructing numbers where all digits are equal (e.g., 11, 22, 333) instead of actually generating sequential digits (like 123, 234). The approach is fundamentally flawed and does not solve the problem as intended, but the code was accepted due to weak test cases.
+The approach attempts to generate all sequential numbers by iterating over possible digit lengths and starting digits, then filtering for the valid range. While the core idea is in the right direction, the implementation has logical flaws that cause it to generate incorrect numbers and perform unnecessary work.
 
 ### Complexity
-- **Time complexity**: The outer loop runs over digit lengths (l to r), and inner loops run a constant number of times (each loop bounded by 9). However, the inner construction is incorrect. The total operations are O(1) due to fixed constraints (only 9 possible starting digits and max 9 lengths).
-- **Space complexity**: O(1) for storage (only 36 numbers maximum in `p`), but the output list size is bounded by the number of sequential digits in the range (which is also O(1)).
+- **Time complexity**: O(1) in practice, since the number of sequential digits is fixed (only 36 possible numbers between 10 and 10^9).
+- **Space complexity**: O(1), as the output list has at most 36 elements.
 
 ### vs. optimal
-The optimal approach generates all sequential numbers by iterating over possible starting digits (1-9) and possible lengths (2-9), constructing each number by incrementing the last digit. For example, start with 1, then form 12, 123, etc., until digit >9. This generates all valid numbers without duplicates, and they are naturally sorted. The complexity is O(1) since there are only 36 such numbers total (9+8+7+...+1). The submission does not generate sequential digits at all—it generates repdigits (like 11, 22)—so it is incorrect and only passed due to coincidental test cases.
+The optimal approach is to precompute *all* 36 possible sequential-digit numbers (from 12 to 123456789) and then filter those within [low, high]. This takes O(1) time and space. 
+
+Your approach is suboptimal because:
+- The inner loop logic is flawed: it generates numbers with *exactly* `i` digits, but the loop condition `cnt <= i` allows generating numbers with fewer digits if `j` exceeds 9 prematurely. This produces incorrect numbers.
+- It uses an intermediate list `p` to store *all* generated numbers of lengths between `l` and `r`, many of which may be invalid, before filtering.
 
 ### Improvements
-1. **Correct the generation logic**: Replace the inner loops to actually generate sequential digits. For each starting digit `s` and length `len`, build the number by appending `s + i` for i in [0, len-1].
-2. **Avoid redundant collection**: Instead of first collecting all repdigits and then filtering, generate only valid sequential digits directly within the range.
-3. **Use efficient construction**: Precompute the sequential numbers without storing intermediate incorrect values.
+1. **Fix the generation logic**: The inner loop should explicitly generate numbers of length `i` only. For example, for length 3, start with digit `d` and take exactly 3 digits: `d, d+1, d+2`. Stop if `d + i - 1 > 9`.
+2. **Avoid intermediate storage**: Generate numbers and directly check if they are within [low, high], instead of storing all candidates first.
+3. **Simplify digit counting**: Use `to_string(low).length()` and `to_string(high).length()` for clarity.
+4. **Use a cleaner loop structure**: Iterate over starting digits (1–9) and lengths (2–9), breaking early when the sequential digit exceeds 9.
 
-Fixed code snippet:
+Example corrected snippet:
 ```cpp
-vector<int> sequentialDigits(int low, int high) {
-    vector<int> ans;
-    for (int start = 1; start <= 9; ++start) {
-        int num = start;
-        for (int next = start + 1; next <= 9; ++next) {
-            num = num * 10 + next;
-            if (num >= low && num <= high) {
-                ans.push_back(num);
-            }
-        }
+for (int len = l; len <= r; len++) {
+    for (int start = 1; start <= 10 - len; start++) {
+        int num = 0;
+        for (int j = 0; j < len; j++) 
+            num = num * 10 + (start + j);
+        if (num >= low && num <= high) 
+            ans.push_back(num);
     }
-    sort(ans.begin(), ans.end());
-    return ans;
 }
 ```
-This generates all sequential digits of length >=2 and sorts them (though they are naturally generated in order, so sorting might be unnecessary but safe). Alternatively, generate by length first to avoid sorting.
 
 ### Why the percentile is low
-The code is incorrect and only passed due to weak test cases (e.g., the provided examples only contain numbers like 123 and 234, which are repdigits only when the starting digit is repeated? Actually, 123 is not a repdigit). The runtime and memory are good only because the problem size is small, but the solution is wrong. Faster solutions correctly generate sequential digits without any extraneous computation or storage.
+Faster solutions precompute all 36 valid sequential numbers once (e.g., in a static vector) and simply iterate through them to filter by range. This avoids redundant digit-by-digit construction for each query and has minimal branching. Your solution’s flawed logic and unnecessary intermediate storage cause it to be slower in practice, despite the same asymptotic complexity.
