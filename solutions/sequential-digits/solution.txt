@@ -17,7 +17,7 @@ public:
            while(x<=9){
             int t=0,cnt=0;
              for(int j=x;j<=9 && cnt<=i;j++){
-                 t=t*10+x;
+                 t=t*10+j;
                  cnt++;
              }
              cout<<t<<endl;
