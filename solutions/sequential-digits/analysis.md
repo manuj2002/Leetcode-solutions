@@ -3,44 +3,25 @@ problem: "Sequential Digits"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.1 MB
+memory: 8.3 MB
 date: 2026-07-13
 ---
 
 # Analysis
 
 ### Verdict summary
-The approach attempts to generate all sequential numbers by iterating over possible digit lengths and starting digits, then filtering for the valid range. While the core idea is in the right direction, the implementation has logical flaws that cause it to generate incorrect numbers and perform unnecessary work.
+This solution generates all sequential-digit numbers by brute-force constructing every possible starting digit and length, then filters them against the bounds. While it passes due to extremely small total numbers (only 36 possible sequential numbers total in the range 10–10^9), it includes unnecessary steps: it generates many numbers outside the target length range and performs a separate filtering pass.
 
 ### Complexity
-- **Time complexity**: O(1) in practice, since the number of sequential digits is fixed (only 36 possible numbers between 10 and 10^9).
-- **Space complexity**: O(1), as the output list has at most 36 elements.
+- Time: O(1) — because there are only 9·10/2 = 45 possible sequential-digit numbers with ≤ 10 digits, and the loops iterate at most 9×9 = 81 times regardless of input.
+- Space: O(1) ignoring output, since intermediate vector `p` stores at most 45 ints.
 
 ### vs. optimal
-The optimal approach is to precompute *all* 36 possible sequential-digit numbers (from 12 to 123456789) and then filter those within [low, high]. This takes O(1) time and space. 
-
-Your approach is suboptimal because:
-- The inner loop logic is flawed: it generates numbers with *exactly* `i` digits, but the loop condition `cnt <= i` allows generating numbers with fewer digits if `j` exceeds 9 prematurely. This produces incorrect numbers.
-- It uses an intermediate list `p` to store *all* generated numbers of lengths between `l` and `r`, many of which may be invalid, before filtering.
+This is essentially optimal in complexity (there are only O(1) valid numbers), but the implementation is not the most direct known optimal approach. The optimal solution typically generates numbers in order by iterating over starting digits (1–9) and length (2–10 digits), constructing each sequential number, adding it if within bounds, and stopping early when the number exceeds `high` or length exceeds 10. This avoids storing and later filtering intermediate results.
 
 ### Improvements
-1. **Fix the generation logic**: The inner loop should explicitly generate numbers of length `i` only. For example, for length 3, start with digit `d` and take exactly 3 digits: `d, d+1, d+2`. Stop if `d + i - 1 > 9`.
-2. **Avoid intermediate storage**: Generate numbers and directly check if they are within [low, high], instead of storing all candidates first.
-3. **Simplify digit counting**: Use `to_string(low).length()` and `to_string(high).length()` for clarity.
-4. **Use a cleaner loop structure**: Iterate over starting digits (1–9) and lengths (2–9), breaking early when the sequential digit exceeds 9.
-
-Example corrected snippet:
-```cpp
-for (int len = l; len <= r; len++) {
-    for (int start = 1; start <= 10 - len; start++) {
-        int num = 0;
-        for (int j = 0; j < len; j++) 
-            num = num * 10 + (start + j);
-        if (num >= low && num <= high) 
-            ans.push_back(num);
-    }
-}
-```
-
-### Why the percentile is low
-Faster solutions precompute all 36 valid sequential numbers once (e.g., in a static vector) and simply iterate through them to filter by range. This avoids redundant digit-by-digit construction for each query and has minimal branching. Your solution’s flawed logic and unnecessary intermediate storage cause it to be slower in practice, despite the same asymptotic complexity.
+1. **Remove the separate filter pass:** Instead of storing all candidates in `p` then filtering by range, check `low ≤ t ≤ high` while generating and push to `ans` directly. This saves extra storage and a full pass.
+2. **Avoid generating out-of-range lengths:** The inner `while(x<=9)` can stop early when starting digit `x` causes the generated number to exceed 10-digit constraints or when initial digit too high for length `i` (this is minor but more logical).
+3. **Remove debugging output:** `cout<<t<<endl;` should be deleted in final code.
+4. **Better naming:** `p` is unclear; use `candidates` or just eliminate it entirely. `digitCounter` is fine but `countDigits` more conventional.
+5. **Use direct length limits:** Instead of `for(int j=x; j<=9 && cnt<i; j++)`, compute max possible starting digit for given length as `10-i` to skip pointless loops.
