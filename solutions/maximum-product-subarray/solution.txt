@@ -5,20 +5,18 @@ public:
         for(auto e:nums){
             if(e==0){
                 ans=max(ans,0);
-                current_max=1;
                 current_min=1;
-                continue;
-            }
-            current_max*=e;
-            current_min*=e;
-            ans=max(ans,max(current_max,current_min));
-            if(current_max<=0){
-                current_max=e;
-            }
+                current_max=1;
 
-            if(current_min>=0){
-                current_min=e;
             }
+            
+            int temp_min=e*current_min;
+            int temp_max=e*current_max;
+           current_max=max(temp_min,max(e,temp_max));
+           current_min=min(temp_min,min(e,temp_max));
+           ans=max(ans,max(current_max,current_min));
+
+            
         }
 
         return ans;
