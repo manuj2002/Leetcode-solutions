@@ -10,20 +10,22 @@ date: 2026-07-14
 # Analysis
 
 ### Verdict summary
-The approach attempts a constant-space solution by using the first row and column as markers, but it incorrectly handles the first row and column by storing their original state in separate variables that are later misapplied. The core idea is correct, but implementation flaws lead to incorrect handling of edge cases.
+The code correctly implements an in-place solution by using the first row and first column as markers for which rows and columns need to be zeroed. This is the optimal constant-space approach for the problem, though the implementation has minor inefficiencies.
 
 ### Complexity
-- **Time complexity:** O(m × n) from four passes over the matrix (two for storing initial state, two for zeroing rows/columns).  
-- **Space complexity:** O(m + n) due to unnecessary `col` and `row` vectors, violating the constant-space goal.
+- **Time Complexity:** O(m × n) — Each element is visited multiple times but in separate passes, leading to a linear time relative to the matrix size.
+- **Space Complexity:** O(1) — Only a few integer variables are used, satisfying the constant-space requirement.
 
 ### vs. optimal
-The optimal solution uses the first row and column as markers without allocating extra arrays. It first checks if the first row/column should be zeroed, then uses the rest of the matrix to mark zeros in the first row/column, zeroes the inner matrix based on markers, and finally zeroes the first row/column if needed. This achieves O(1) space and O(m × n) time. The submitted code misses the mark by storing the first row/column in vectors (O(m + n) space) and misusing the `isfirstROw/isfirstCol` flags with incorrect assignment syntax (`==` instead of `=`).
+This *is* the optimal constant-space approach. The known optimal solution uses the first row and column as flags to mark zero rows/columns, then processes the inner matrix based on these flags, and finally handles the first row and column separately. Your implementation follows this exact logic.
 
 ### Improvements
-1. **Eliminate redundant vectors:** Remove `col` and `row` vectors entirely. Use the first row/column directly for marking.
-2. **Fix assignment errors:** Lines 42 and 48 use `matrix[i][0]==0` (comparison) instead of `matrix[i][0]=0` (assignment). This prevents zeroing the first row/column when intended.
-3. **Simplify logic:** Check and store the first row/column zero status in boolean flags (not counters), then process the inner matrix for markers, zero rows/columns based on markers, and finally zero the first row/column if flags are true.
-4. **Merge passes:** Reduce the number of passes by combining the marker-setting and zeroing steps where possible.
+1. **Redundant marker checks:** The variables `isfirstROw` and `isfirstCol` are integers that count zeros, but booleans would be more logical since you only need to know if *any* zero exists. However, since you only check if they are non-zero, the behavior is correct but the naming is misleading (e.g., `isfirstCol++` suggests incrementing a counter when a flag would suffice).
+2. **Inefficient flagging loop order:** The initial two loops to check the first row/column for zeros are unnecessary as this information can be captured during the main marking pass. This would reduce the number of passes over the matrix.
+3. **Code clarity:** The final zeroing loops for the first row/column should be placed immediately after the marking step for better readability, and variable names should be more descriptive (e.g., `firstRowHasZero` instead of `isfirstROw`).
 
 ### Why the percentile is low
-The code fails to achieve O(1) space due to unnecessary vectors, and the assignment bugs cause incorrect results for matrices where the first row or column contains zeros. Faster solutions avoid extra allocations, use tighter loops, and correctly handle the first row/column with proper in-place markers.
+Despite being optimal in theory, the runtime percentile may be lower due to:
+- **Extra passes:** The initial two loops to check the first row/column are redundant and add unnecessary overhead. Most optimal solutions check these flags *during* the first marking pass.
+- **Cache performance:** The column-zeroing loops (which access memory in a non-contiguous manner) may suffer from poor cache locality compared to solutions that optimize access patterns. However, this is inherent to the problem and likely not the primary issue.
+The memory usage is optimal, so the lower percentile in that category is likely due to statistical noise or minimal variations in LeetCode's measurement.
