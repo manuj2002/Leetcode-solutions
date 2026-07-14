@@ -1,28 +1,40 @@
 ---
 problem: "Maximum Subarray"
 difficulty: unknown
-verdict: Accepted
-runtime: 0 ms
-memory: 8.2 MB
+verdict: Runtime Error
+runtime: N/A
+memory: N/A
 date: 2026-07-14
 ---
 
 # Analysis
 
 ### Verdict summary
-This is an incorrect implementation of Kadane's algorithm that happens to pass due to flawed logic that coincidentally yields correct results only for cases where `current_sum + nums[i]` is never worse than `nums[i]`. The approach is unsound and should not be used.
+The code attempts to use a greedy approach but contains a critical off-by-one error by initializing with `nums[1]` instead of `nums[0]`, leading to a heap-buffer-overflow when the array has only one element. The logic is flawed even if corrected, as it doesn't properly reset the current sum when it becomes negative.
 
 ### Complexity
-**Time:** O(n) — single pass through the array.  
-**Space:** O(1) — constant extra space.
+**Time:** O(n) — The code iterates through the array once.  
+**Space:** O(1) — It uses constant extra space.
 
 ### vs. optimal
-The optimal solution is Kadane’s algorithm: `current_sum = max(nums[i], current_sum + nums[i])`. This implementation incorrectly uses `if(nums[i] > current_sum)` instead of comparing `nums[i]` with `current_sum + nums[i]`. This fails on sequences like [-2, -1], where `current_sum = -2`, `nums[1] = -1`, `-1 > -2` → `current_sum = -1`, but the correct choice is to start fresh at -1, which coincidentally works here but mis-handles cases like [2, -5, 3] (expected 3, output -3).
+The optimal solution uses Kadane's algorithm, which maintains a running sum and resets it to the current element if the running sum becomes negative. Your code incorrectly adds the current element even when the running sum is negative (by only checking if `nums[i] > current_sum`), failing to reset properly. The correct Kadane's algorithm should initialize `current_sum` and `ans` to `nums[0]` and iterate from index 1, updating `current_sum = max(nums[i], current_sum + nums[i])`.
 
 ### Improvements
-1. **Algorithm correctness:** Replace the conditional with `current_sum = max(nums[i], current_sum + nums[i])`.  
-2. **Uninitialized risk:** Initialize loop index `i` to 1 only if `nums.size()` > 1, though `size()` ≥ 1 per constraints. Still, more robust to check.  
-3. **Readability:** Use `std::max` consistently and consider range-based for with manual index skip for clarity.
+1. **Fix index error:** Start by initializing `current_sum` and `ans` to `nums[0]` and iterate from `i = 1` to `nums.size() - 1`.
+2. **Correct the logic:** Replace the conditional with `current_sum = max(nums[i], current_sum + nums[i])` to properly reset the running sum when it becomes negative.
+3. **Use standard library:** Use `std::max` directly for clarity and correctness.
 
-### Why the percentile is low
-The percentile is low because actual Kadane’s algorithm has a clearer, slightly faster expression that avoids unnecessary branching. This code’s flawed logic may not cause visible runtime overhead but fails logical correctness under proper testing. The official solution uses `max(nums[i], current_sum + nums[i])` directly, which is the standard, optimized, and understood pattern.
+Corrected code:
+```cpp
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        int current_sum = nums[0], ans = nums[0];
+        for (int i = 1; i < nums.size(); i++) {
+            current_sum = max(nums[i], current_sum + nums[i]);
+            ans = max(ans, current_sum);
+        }
+        return ans;
+    }
+};
+```
