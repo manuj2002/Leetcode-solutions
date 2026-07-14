@@ -19,7 +19,7 @@ public:
 
         for(auto e:row){
             for(int i=0;i<matrix[0].size();i++){
-                matrix[e][j]=0;
+                matrix[e][i]=0;
             }
         }
 
