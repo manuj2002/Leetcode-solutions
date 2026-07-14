@@ -46,18 +46,12 @@ public:
             for(int i=0;i<matrix.size();i++){
             matrix[i][0]==0;}
     
-        }else{
-            for(int i=0;i<matrix.size();i++){
-                matrix[i][0]==col[i];}
         }
 
         if(isfirstROw){
             for(int j=0;j<matrix[0].size();j++){
             matrix[0][j]==0;}
         
-        }else{
-            for(int j=0;j<matrix[0].size();j++){
-            matrix[0][j]==row[j];}
         }
 
         return;
