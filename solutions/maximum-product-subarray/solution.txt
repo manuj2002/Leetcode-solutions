@@ -6,7 +6,7 @@ public:
             current_max*=e;
             current_min*=e;
             ans=max(ans,max(current_max,current_min));
-            if(current_max<0){
+            if(current_max<=0){
                 current_max=e;
             }
 
