@@ -10,7 +10,7 @@ public:
             }
         }
 
-         for(int i=0;j<matrix[0];j++){
+         for(int j=0;j<matrix[0].size();j++){
             row.push_back(matrix[0][j]);
             if(matrix[0][j]==0){
                 isfirstROw++;
@@ -45,7 +45,7 @@ public:
         if(isfirstCol){
             for(int i=0;i<matrix.size();i++){
             matrix[i][0]==0;}
-        }
+    
         }else{
             for(int i=0;i<matrix.size();i++){
                 matrix[i][0]==col[i];}
@@ -54,7 +54,7 @@ public:
         if(isfirstROw){
             for(int j=0;j<matrix[0].size();j++){
             matrix[0][j]==0;}
-        }
+        
         }else{
             for(int j=0;j<matrix[0].size();j++){
             matrix[0][j]==row[j];}
