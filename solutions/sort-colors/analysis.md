@@ -3,31 +3,27 @@ problem: "Sort Colors"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 11.8 MB
+memory: 8.3 MB
 date: 2026-07-14
 ---
 
 # Analysis
 
 ### Verdict summary
-The submitted solution uses a two-pass counting sort. It first counts the occurrences of 0s, 1s, and 2s, then overwrites the array with the counts in order. While this approach works and is O(n), it is not the optimal one-pass solution requested in the follow-up.
+Your solution is a two-pass counting sort: first count frequencies of 0, 1, and 2, then overwrite the array accordingly. It’s correct but not optimal for the follow-up (one-pass in-place), though it’s still O(n) and gets accepted.
 
 ### Complexity
-**Time complexity:** O(n) — Two passes through the array: one for counting and one for overwriting.  
-**Space complexity:** O(1) — Uses only three integer counters (z, o, t), so constant extra space.
+Time: O(n) – two separate passes over the array.  
+Space: O(1) – only three integer counters, constant extra space.
 
 ### vs. optimal
-The optimal approach for this problem is the Dutch National Flag algorithm, which achieves O(n) time complexity in a single pass using three pointers (low, mid, high) to partition the array into 0s, 1s, and 2s in-place. The submitted solution differs by requiring two passes and is less efficient for large datasets due to unnecessary overwrites, even though it meets the base problem constraints.
+The known optimal solution for this problem is the Dutch national flag algorithm (three pointers: `low`, `mid`, `high`), which does a **single pass in-place swapping** and still O(n) time, O(1) space.  
+Your solution uses two passes and overwrites rather than swapping, which is simpler but doesn’t satisfy the “one-pass” follow-up constraint.
 
 ### Improvements
-1. **Adopt the Dutch National Flag algorithm** for a true one-pass solution. Replace the counting approach with:
-   ```cpp
-   int low = 0, mid = 0, high = nums.size() - 1;
-   while (mid <= high) {
-       if (nums[mid] == 0) swap(nums[low++], nums[mid++]);
-       else if (nums[mid] == 1) mid++;
-       else swap(nums[mid], nums[high--]);
-   }
-   ```
-2. **Avoid redundant overwrites**. The current method writes all elements twice (once to count, once to assign), which is inefficient for large arrays.
-3. **Use pre-increment where possible**. In the reassignment loop, `z--`, `o--`, and `t--` could be merged into the assignment (e.g., `nums[i] = (z-- > 0) ? 0 : ...`), though this is minor.
+1. **Unnecessary second pass**: The counting loop + overwriting loop could be fused into a single pass if you just kept counts and updated accordingly, but still not one-pass in the intended sense (writing back doesn't involve swaps). A better one-pass implementation would use swap operations with three pointers.
+2. **Unidiomatic C++**: Using variable names `z`, `o`, `t` reduces readability (`redCount`, `whiteCount`, `blueCount` would be clearer). Prefer `range-based for` consistently or use standard algorithms where possible (though `std::sort` is disallowed here).
+3. **Extra logic in write loop**: The loop with three `if-else` is simple but could be replaced with three separate `fill` loops for clarity without branching inside.
+
+### Why the percentile is low
+Your runtime is reported 0 ms, but the low runtime percentile (based on LeetCode’s distribution) suggests many solutions are faster because they use the **Dutch flag algorithm** — single pass with in-place swaps, which is optimal and meets the follow-up constraint exactly. Counting then overwriting involves two passes over data and may have slightly higher constant overhead for memory writes even though big-O is the same.
