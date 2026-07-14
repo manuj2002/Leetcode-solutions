@@ -1,9 +1,9 @@
 class Solution {
 public:
     int maxSubArray(vector<int>& nums) {
-        int current_sum=nums[1], ans=nums[1];
+        int current_sum=nums[0], ans=nums[0];
         for(int i=1;i<nums.size();i++){
-              if(nums[i]>current_sum){
+              if(current_sum<0){
                 current_sum=nums[i];
               }else{
                  current_sum+=nums[i];
