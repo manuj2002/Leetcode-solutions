@@ -1,0 +1,21 @@
+class Solution {
+public:
+    int maxProduct(vector<int>& nums) {
+        int current_max=1,current_min=1,ans=INT_MIN;
+        for(auto e:nums){
+            current_max*=e;
+            current_min*=e;
+            ans=max(ans,max(current_max,current_min));
+            if(current_max<0){
+                current_max=e;
+            }
+
+            if(current_min>0){
+                current_min=e;
+            }
+        }
+
+        return ans;
+
+    }
+};
