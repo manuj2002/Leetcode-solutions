@@ -1,26 +1,29 @@
 ---
 problem: "Set Matrix Zeroes"
 difficulty: unknown
-verdict: Compile Error
-runtime: N/A
-memory: N/A
+verdict: Accepted
+runtime: 0 ms
+memory: 8.2 MB
 date: 2026-07-14
 ---
 
 # Analysis
 
 ### Verdict summary
-The code attempts an O(m+n) space solution but contains a compile error due to an undeclared variable. The approach is valid but suboptimal compared to the constant space solution.
+This solution uses O(m + n) extra space to record rows and columns containing zeros, then iterates to set those rows and columns to zero. While functionally correct, it is not the optimal space solution for this problem, which can be solved in O(1) auxiliary space.
 
 ### Complexity
-- Time: O(m * n) (two passes: one to find zeros, one to set rows/columns).
-- Space: O(m + n) (stores row and column indices).
+- **Time complexity:** O(m × n) — Two nested loops over the matrix (first to find zeros, second to set rows/columns).
+- **Space complexity:** O(m + n) — Two vectors (`row` and `col`) store up to m rows and n columns.
 
 ### vs. optimal
-The optimal solution uses constant space by leveraging the first row and column as markers, avoiding extra storage. This code uses O(m+n) space, which is acceptable but not optimal. The known optimal approach uses O(1) space by flagging zeros in the first row/column and handling edge cases for the first row/column separately.
+The optimal solution uses O(1) space by leveraging the first row and first column of the matrix as markers for which rows/columns need to be zeroed. It first checks if the first row/column itself needs to be zeroed, then uses them as flags, and finally processes the matrix based on those flags. This solution uses extra vectors instead, missing the constant-space technique.
 
 ### Improvements
-1. Fix the compile error: Replace `matrix[e][j]=0;` with `matrix[e][i]=0;` in the last loop.
-2. Reduce redundancy: Instead of two separate loops for rows and columns, iterate once to mark rows/columns and once to set zeros.
-3. Use constant space: Replace `row` and `col` vectors with boolean flags for the first row/column and use the matrix itself for marking.
-4. Avoid unnecessary iterations: The current code processes all rows for each column zero and all columns for each row zero, which is efficient enough but could be optimized further by using sets to avoid duplicates (though not necessary here since duplicates are handled correctly).
+1. **Eliminate auxiliary vectors:** Use the first row and column as flags to store zero information, reducing space to O(1).
+2. **Avoid redundant loops:** Merge the zero-setting passes by processing markers in place.
+3. **Early termination:** If no zeros are found, return early to save cycles (minor optimization).
+4. **Use boolean flags:** For clarity, use boolean variables to track if the first row/column should be zeroed.
+
+### Why the percentile is low
+The runtime/memory percentiles are low because this solution uses O(m + n) space, while the fastest submissions use the O(1) in-place marking technique. The extra space allocation and separate passes for row/column zeroing add overhead, making it less efficient compared to optimal implementations.
