@@ -1,29 +1,29 @@
 ---
 problem: "Set Matrix Zeroes"
 difficulty: unknown
-verdict: Accepted
-runtime: 0 ms
-memory: 8.2 MB
+verdict: Compile Error
+runtime: N/A
+memory: N/A
 date: 2026-07-14
 ---
 
 # Analysis
 
 ### Verdict summary
-This solution uses O(m + n) extra space to record rows and columns containing zeros, then iterates to set those rows and columns to zero. While functionally correct, it is not the optimal space solution for this problem, which can be solved in O(1) auxiliary space.
+The submission attempts an in-place approach by using the first row and column as markers, which is the correct constant-space strategy. However, the implementation contains critical syntax errors and logical flaws that prevent compilation and correct execution.
 
 ### Complexity
-- **Time complexity:** O(m × n) — Two nested loops over the matrix (first to find zeros, second to set rows/columns).
-- **Space complexity:** O(m + n) — Two vectors (`row` and `col`) store up to m rows and n columns.
+- **Time complexity**: O(m × n) from iterating through the matrix multiple times, which is optimal.
+- **Space complexity**: O(1) extra space attempted, but O(m + n) actually used due to unnecessary vectors `col` and `row`.
 
 ### vs. optimal
-The optimal solution uses O(1) space by leveraging the first row and first column of the matrix as markers for which rows/columns need to be zeroed. It first checks if the first row/column itself needs to be zeroed, then uses them as flags, and finally processes the matrix based on those flags. This solution uses extra vectors instead, missing the constant-space technique.
+The optimal approach uses the matrix's first row and first column as flags to mark which rows/columns need zeroing, avoiding extra space. Your solution attempts this but introduces significant issues:
+
+1. **Extra O(m + n) space**: You allocate vectors `col` and `row`, contradicting the constant-space goal.
+2. **Incorrect marker logic**: You overwrite the first row/column with markers before checking if they originally contained zeros, losing critical information. The correct approach checks the first row/column for zeros first, then uses them as markers, and finally zeroes them if needed.
 
 ### Improvements
-1. **Eliminate auxiliary vectors:** Use the first row and column as flags to store zero information, reducing space to O(1).
-2. **Avoid redundant loops:** Merge the zero-setting passes by processing markers in place.
-3. **Early termination:** If no zeros are found, return early to save cycles (minor optimization).
-4. **Use boolean flags:** For clarity, use boolean variables to track if the first row/column should be zeroed.
-
-### Why the percentile is low
-The runtime/memory percentiles are low because this solution uses O(m + n) space, while the fastest submissions use the O(1) in-place marking technique. The extra space allocation and separate passes for row/column zeroing add overhead, making it less efficient compared to optimal implementations.
+1. **Fix syntax errors**: Line 10 has `for(int i=0;j<matrix[0];j++)` — should be `for(int j=0; j<matrix[0].size(); j++)`. Also, remove extra braces after `if(isfirstCol)` and `if(isfirstROw)` blocks.
+2. **Eliminate redundant storage**: Remove `col` and `row` vectors entirely. Instead, check the first row/column for zeros upfront using two boolean flags (e.g., `bool firstRowZero = false`, `bool firstColZero = false`).
+3. **Correct marker placement**: After checking the first row/column, iterate from `i=1` and `j=1` to mark zeros in the first row/column. Then zero rows/columns based on markers, and finally zero the first row/column if the flags are set.
+4. **Fix assignment vs. comparison**: Lines 47, 49, 53, and 55 use `==` (comparison) instead of `=` (assignment).
