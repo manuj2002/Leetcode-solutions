@@ -1,40 +1,28 @@
 ---
 problem: "Maximum Subarray"
 difficulty: unknown
-verdict: Runtime Error
-runtime: N/A
-memory: N/A
+verdict: Accepted
+runtime: 0 ms
+memory: 8.2 MB
 date: 2026-07-14
 ---
 
 # Analysis
 
 ### Verdict summary
-The code attempts to use a greedy approach but contains a critical off-by-one error by initializing with `nums[1]` instead of `nums[0]`, leading to a heap-buffer-overflow when the array has only one element. The logic is flawed even if corrected, as it doesn't properly reset the current sum when it becomes negative.
+The approach uses Kadane's algorithm, which is the optimal solution for the maximum subarray problem. The implementation efficiently finds the maximum subarray sum in a single pass through the array.
 
 ### Complexity
-**Time:** O(n) — The code iterates through the array once.  
-**Space:** O(1) — It uses constant extra space.
+**Time:** O(n) - The algorithm iterates through the array once, performing constant time operations at each element.  
+**Space:** O(1) - Only a few integer variables are used, regardless of input size.
 
 ### vs. optimal
-The optimal solution uses Kadane's algorithm, which maintains a running sum and resets it to the current element if the running sum becomes negative. Your code incorrectly adds the current element even when the running sum is negative (by only checking if `nums[i] > current_sum`), failing to reset properly. The correct Kadane's algorithm should initialize `current_sum` and `ans` to `nums[0]` and iterate from index 1, updating `current_sum = max(nums[i], current_sum + nums[i])`.
+This implementation *is* optimal. Kadane's algorithm is the standard O(n) solution for this problem. It maintains a running sum (`current_sum`) and resets it to the current element when it becomes negative, while keeping track of the maximum sum encountered (`ans`).
 
 ### Improvements
-1. **Fix index error:** Start by initializing `current_sum` and `ans` to `nums[0]` and iterate from `i = 1` to `nums.size() - 1`.
-2. **Correct the logic:** Replace the conditional with `current_sum = max(nums[i], current_sum + nums[i])` to properly reset the running sum when it becomes negative.
-3. **Use standard library:** Use `std::max` directly for clarity and correctness.
+1. **Input Validation:** The code assumes the input vector has at least one element, which is valid per constraints, but could add a check for empty input if robustness beyond constraints is desired.
+2. **Initialization Clarity:** The loop starts at index 1, which is correct due to the initialization of `current_sum` and `ans` to `nums[0]`. However, initializing `current_sum = 0` and `ans = INT_MIN` would allow starting the loop at index 0, making the logic slightly more uniform, though not necessary.
+3. **Style Consistency:** Use consistent spacing around operators (e.g., `current_sum = nums[0]` instead of `current_sum=nums[0]`) for better readability.
 
-Corrected code:
-```cpp
-class Solution {
-public:
-    int maxSubArray(vector<int>& nums) {
-        int current_sum = nums[0], ans = nums[0];
-        for (int i = 1; i < nums.size(); i++) {
-            current_sum = max(nums[i], current_sum + nums[i]);
-            ans = max(ans, current_sum);
-        }
-        return ans;
-    }
-};
-```
+### Why the percentile is low
+The percentile is likely low due to minor runtime variations rather than algorithmic inefficiency. The solution is already optimal (O(n) time, O(1) space). Other submissions may have identical complexity but achieve slightly faster runtime due to compiler optimizations, lower constant factors (e.g., using a `for-each` loop to avoid index bounds checking), or simply being run on a less loaded server. The algorithm itself cannot be improved asymptotically.
