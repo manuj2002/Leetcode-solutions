@@ -3,26 +3,30 @@ problem: "Set Matrix Zeroes"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.3 MB
+memory: 8.4 MB
 date: 2026-07-14
 ---
 
 # Analysis
 
-### Verdict Summary
-Your solution correctly uses the first row and first column as markers to record which rows and columns need to be zeroed, which is a standard constant-space approach. However, the implementation has a flaw in the way it handles the first row and column, leading to redundant checks and suboptimal performance.
+### Verdict summary
+The submission implements an in-place solution using the first row and first column as markers to track which rows and columns need to be zeroed. This is the correct constant-space approach for the problem. However, there are inefficiencies in the implementation that affect performance.
 
 ### Complexity
-- **Time Complexity:** O(m * n) — The code iterates through the matrix multiple times, but each pass is linear in the number of elements.
-- **Space Complexity:** O(1) — Only a few integer variables are used, so it is constant space.
+- **Time complexity**: O(m × n) — The solution performs multiple passes over the matrix, but each pass is linear in the size of the matrix.
+- **Space complexity**: O(1) — Only a few integer variables are used, satisfying the constant-space requirement.
 
-### vs. Optimal
-The optimal approach for this problem uses the first row and first column as markers to avoid extra space. Your solution does this, but the implementation is inefficient. The optimal method typically checks the first row and column first, then uses them to mark the inner matrix, and finally zeroes the inner matrix based on those markers before handling the first row and column. Your code has an extra loop for the first column and uses nested loops in a suboptimal way when applying the zeros.
+### vs. optimal
+The optimal approach for this problem is indeed O(m × n) time and O(1) space, using the first row and first column as marker arrays. This submission follows that strategy. However, the optimal implementation avoids redundant checks and minimizes the number of passes. Specifically, the marker-checking loops here are slightly inefficient in their structure.
 
 ### Improvements
-1. **Redundant First Column Check:** The initial loops to check for zeros in the first row and column are unnecessary. Instead, you should traverse the entire matrix and use the first row and column as markers, but only after storing whether the first row and column themselves need to be zeroed. This avoids two full passes.
-2. **Inefficient Zero Application:** The loops that zero the rows and columns (lines 26-40) are inefficient. Specifically, the inner loop for columns (lines 33-39) is nested incorrectly; it should iterate over rows for each column, but you have it iterating over columns for each row. This causes redundant checks. Instead, zero the inner matrix based on the markers in the first row and column in two separate passes.
-3. **Idiomatic C++:** Use `bool` for flags (`isfirstROw`, `isfirstCol`) instead of `int` to semantically represent boolean values.
+1. **Merge initial marker scans**: The first two loops checking `isfirstROw` and `isfirstCol` can be combined into the main marking loop. Currently, they are separate passes.  
+2. **Eliminate redundant inner loop**: The second nested loop has an inefficient structure—iterating over columns in the outer loop and rows in the inner loop is cache-inefficient. It should iterate over rows first, then columns.  
+3. **Variable naming and initialization**: Use booleans (`bool`) instead of integers for flags (`isfirstROw`, `isfirstCol`). Initialize them to `false` and set to `true` upon finding a zero.  
+4. **Remove unnecessary loop nesting**: The zero-setting loop after marking can be simplified to two separate loops for rows and columns, which is clearer and more efficient.
 
-### Why the Percentile is Low
-The solution is correct but not optimally implemented. The extra initial passes and the nested loop structure when zeroing the matrix introduce unnecessary operations. Faster solutions avoid these by storing the state of the first row and column in two boolean variables during the first pass, then marking the inner matrix, zeroing the inner matrix based on the markers, and finally zeroing the first row and column if needed. This reduces the number of passes and checks, making it more efficient.
+### Why the percentile is low
+Despite being O(1) in space, the runtime is impacted by:
+- **Cache-inefficient loops**: The column-major inner loop in the zero-setting phase causes poor cache locality.
+- **Extra passes**: The initial separate scans for the first row/column add unnecessary operations. Top solutions merge these checks into the main marking pass.
+- **Non-idiomatic logic**: Using integer counts for flags and inverted loop orders are minor but contribute to overhead. The fastest solutions use tighter, cache-friendly loops and minimal branching.
