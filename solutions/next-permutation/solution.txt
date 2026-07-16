@@ -22,7 +22,15 @@ public:
         }
         if(i<0)
         return;
-        swap(nums[i],nums[nums.size()-1]);
+        int j=i+1;
+        for(int k=i+1;k<nums.size();k++){
+            if(nums[k]>nums[i]){
+                if(nums[j]-nums[i]>nums[k]-nums[i]){
+                    j=k;
+                }
+            }
+        }
+        swap(nums[i],nums[k]);
         sort(nums.begin()+i+1,nums.end());
         return;
 
