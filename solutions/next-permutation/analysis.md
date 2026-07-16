@@ -1,7 +1,7 @@
 ---
 problem: "Next Permutation"
 difficulty: unknown
-verdict: Compile Error
+verdict: Runtime Error
 runtime: N/A
 memory: N/A
 date: 2026-07-16
@@ -10,22 +10,37 @@ date: 2026-07-16
 # Analysis
 
 ### Verdict summary
-The attempted approach tries to detect if the array is descending to decide when to sort, then finds the first decreasing element from the right to swap and sort. However, it fails due to variable scope errors (undeclared `i`), incorrect descending detection logic, and flawed swap choice. This isn’t the correct implementation of the standard next permutation algorithm.
+The approach attempts to find the next lexicographical permutation but has critical flaws. The initial loop checks for a descending array incorrectly and a runtime error occurs when accessing `nums[i-1]` on the first iteration (i=0). The core logic is incomplete even if fixed.
 
 ### Complexity
-Time: O(n log n) (from sorting). Space: O(1) aside from sort's stack space. The detection loop is O(n).
+- **Time complexity:** O(N log N) due to sorting operations.
+- **Space complexity:** O(1) additional space, meeting the constant-memory requirement.
 
-### vs. optimal
-The known optimal approach is:
-1. Find the first index `i` from the right where `nums[i] < nums[i+1]`.
-2. If none exists, reverse the entire array (lowest permutation).
-3. Otherwise, find the smallest element larger than `nums[i]` to the right, swap them.
-4. Reverse `nums[i+1..end]` (or sort, but reverse is O(n) here since it’s already descending).
+### vs. Optimal
+The optimal approach for this problem (standard algorithm) is O(N) time and O(1) space:
+1. Find the largest index `i` such that `nums[i] < nums[i+1]` (from the end).
+2. Find the smallest element larger than `nums[i]` to its right.
+3. Swap them.
+4. Reverse the suffix after `i` to get the smallest lex order.
 
-Optimal time O(n), space O(1). This submission incorrectly uses sorting throughout, doesn’t reverse efficiently, and the descending check (which is wrong anyway) is unnecessary—the problem naturally handles the "wrap-around" case in step 2.
+Your code fails to correctly identify the pivot point and doesn't handle the swap-and-reverse logic properly. The incorrect initial descending check and sorting instead of reversing make it suboptimal.
 
 ### Improvements
-1. **Variable scope**: `i` used in the second while loop is undeclared; it should be `int i = n;` given earlier `n = nums.size()-2`? But `n` might be set wrong. Declare `i` explicitly.
-2. **Faulty descending detection**: The `if(nums[i-1]>=nums[i])` check in the first loop causes an out-of-bounds access when `i=0` and doesn’t correctly test descending order. Remove this entire detection block—it’s not needed.
-3. **Swap target**: `swap(nums[i], nums[nums.size()-1])` is arbitrary; you must find the smallest larger element to the right of `nums[i]` and swap with that, not the last element.
-4. **Unnecessary sorts**: Instead of `sort(nums.begin()+i, nums.end())`, reverse `nums.begin()+i+1, nums.end()` after swapping for O(n) worst-case. Sorting is O(n log n) overkill.
+1. **Fix index bounds:** Remove the first loop entirely. The `i-1` access at `i=0` causes undefined behavior.
+2. **Correct pivot search:** Start from the end to find the first decreasing element (`nums[i] < nums[i+1]`).
+3. **Find correct swap target:** Search from the end for the smallest element larger than `nums[i]`, then swap.
+4. **Reverse suffix:** After swapping, reverse the subarray from `i+1` to end (O(N)) instead of sorting (O(N log N)).
+
+Example corrected implementation:
+```cpp
+void nextPermutation(vector<int>& nums) {
+    int i = nums.size() - 2;
+    while (i >= 0 && nums[i] >= nums[i + 1]) i--;
+    if (i >= 0) {
+        int j = nums.size() - 1;
+        while (j > i && nums[j] <= nums[i]) j--;
+        swap(nums[i], nums[j]);
+    }
+    reverse(nums.begin() + i + 1, nums.end());
+}
+```
