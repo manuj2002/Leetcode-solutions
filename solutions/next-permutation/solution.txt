@@ -31,13 +31,7 @@ public:
             }
         }
         swap(nums[i],nums[j]);
-        j=i+1;
-        int k=nums.size()-1;
-        while(j<=k){
-            swap(nums[i],nums[j]);
-            j++;
-            k--;
-        }
+        sort(nums.begin()+i+1,nums.end());
         return;
 
     }
