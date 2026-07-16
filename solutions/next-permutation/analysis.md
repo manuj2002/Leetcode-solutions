@@ -3,36 +3,36 @@ problem: "Next Permutation"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.4 MB
+memory: 15.7 MB
 date: 2026-07-16
 ---
 
 # Analysis
 
-### Verdict Summary
-Your solution attempts to simulate the lexicographic algorithm but has critical logic errors and implements unnecessary preprocessing. It correctly identifies the descending-suffix case but is flawed in its next-permutation logic; the final accepted verdict is due to small constraints, not robust logic.
+### Verdict summary
+
+The approach correctly identifies the core steps for finding the next permutation: locating the first decreasing element from the right, then swapping it with the smallest larger element to its right, and finally sorting the suffix. However, the implementation contains an unnecessary initial pass to check if the array is entirely descending, which adds redundant computation. The core logic is correct but not optimally expressed.
 
 ### Complexity
-- Time: O(n log n) worst case due to sorting in the descending check; typical case O(n^2) from the find-and-swap loop with inner comparisons.
-- Space: O(1) extra space, meeting the constant-memory requirement.
 
-### vs. Optimal
-Standard optimal approach:  
-1. Starting from the right, find the first index `i` where `nums[i] < nums[i+1]`.  
-2. Find the smallest element larger than `nums[i]` in the suffix.  
-3. Swap them and reverse the suffix (instead of sorting or partial reverse).  
-Time: O(n), space: O(1).  
-Your code incorrectly uses difference comparison (`nums[j] - nums[i] > nums[k] - nums[i]`) — unstable with negative differences. The final reversal loop also incorrectly swaps `nums[i]` multiple times.
+**Time Complexity:** O(n log n) in the worst case due to the sorting step. The initial descending check and the index search are O(n), but the sort at the end dominates.  
+**Space Complexity:** O(1), as the operations are in-place, meeting the problem's constant extra memory requirement.
+
+### vs. optimal
+
+The known optimal approach is O(n) time and O(1) space. The standard algorithm avoids a full sort by only reversing the suffix after the swap, since the suffix is guaranteed to be in descending order. This reversal is O(n) and avoids the O(n log n) cost of sorting. Your solution differs by using `sort` instead of a simple reverse. While the asymptotic worst-case complexity is worse, it is accepted here due to the small constraint (n ≤ 100). However, for larger inputs, the O(n log n) sort would be noticeably slower than an O(n) reverse.
 
 ### Improvements
-1. **Incorrect swap choice (critical)**:  
-Change `if (nums[j] - nums[i] > nums[k] - nums[i])` to `if (nums[k] <= nums[j] && nums[k] > nums[i])` or simply iterate from the right to find the first element `> nums[i]`.  
-2. **Broken final reversal**:  
-The second `while(j <= k)` incorrectly uses `swap(nums[i], nums[j])`; it should reverse `nums[i+1:]` with `swap(nums[j], nums[k])`.  
-3. **Unneeded descending check**:  
-Remove `idDesc` scan and sort — optimal approach handles descending case with step 1.  
-4. **Unidiomatic C++**:  
-Use `std::reverse()` instead of manual reverse.
 
-### Why the percentile is low
-Faster solutions (O(n)) avoid redundant passes and use `std::reverse`. Yours incurs redundant loops, incorrect calculations (difference comparisons), an unnecessary O(n log n) sort in one case, and uses O(n²) worst-case loops. Most importantly, it’s logically unsound and risks failure for certain inputs, though specific examples may pass due to small constraints.
+1.  **Remove redundant descending check:** The initial loop to check if the entire array is descending is unnecessary. The main algorithm (finding index `i`) naturally handles the edge case where the entire array is descending (i.e., when `i` becomes -1). This loop adds an extra O(n) pass.
+    *   **Fix:** Delete lines 3-10 entirely.
+
+2.  **Use reverse instead of sort:** After swapping `nums[i]` and `nums[j]`, the subarray from `i+1` to the end is in descending order. Reversing it is sufficient to get the smallest lexicographic order, and it runs in O(n) time versus O(n log n) for sorting.
+    *   **Fix:** Replace `sort(nums.begin()+i+1, nums.end());` with `reverse(nums.begin()+i+1, nums.end());`.
+
+3.  **Simplify the swap target selection:** The loop to find index `j` (the smallest element larger than `nums[i]`) is correct but can be optimized. Since the suffix is in descending order, the first element from the right that is larger than `nums[i]` is the smallest valid candidate. This avoids the subtraction comparison.
+    *   **Fix:** Replace the loop for finding `j` with:
+        ```cpp
+        int j = nums.size() - 1;
+        while (j > i && nums[j] <= nums[i]) j--;
+        ```
