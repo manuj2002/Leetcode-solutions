@@ -3,7 +3,7 @@ public:
     void nextPermutation(vector<int>& nums) {
         bool idDesc=true;
         for(int i=1;i<nums.size();i++){
-            if(nums[i-1]>=nums[i]){
+            if(!(nums[i-1]>=nums[i])){
                 idDesc=false;
             }
         }
@@ -23,7 +23,7 @@ public:
         if(i<0)
         return;
         swap(nums[i],nums[nums.size()-1]);
-        sort(nums.begin()+i,nums.end());
+        sort(nums.begin()+i+1,nums.end());
         return;
 
     }
