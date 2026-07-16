@@ -2,7 +2,7 @@ class Solution {
 public:
     void nextPermutation(vector<int>& nums) {
         bool idDesc=true;
-        for(int i=0;i<nums.size();i++){
+        for(int i=1;i<nums.size();i++){
             if(nums[i-1]>=nums[i]){
                 idDesc=false;
             }
