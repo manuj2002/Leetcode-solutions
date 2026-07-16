@@ -1,29 +1,33 @@
 ---
 problem: "Next Permutation"
 difficulty: unknown
-verdict: Accepted
-runtime: 0 ms
-memory: 8.3 MB
+verdict: Compile Error
+runtime: N/A
+memory: N/A
 date: 2026-07-16
 ---
 
 # Analysis
 
 ### Verdict summary
-Your approach incorrectly identifies the next permutation by assuming the swap target is always the last element. While it often passes due to the final sort, it fails on cases like `[1,3,2]` (your code would return `[2,1,3]` instead of `[2,3,1]`), so the solution is fundamentally flawed despite being accepted — it’s only correct for a subset of test cases.
+The submission attempts the classic next permutation algorithm but has a critical logic error and a compile error due to scoping. The overall approach (find dip, swap, reverse suffix) is correct in intent but poorly executed.
 
 ### Complexity
-**Time:** O(n log n) in most cases due to `sort()`, but up to O(n) in early `idDesc` detection if the array is fully descending (though `idDesc` detection itself is O(n)).  
-**Space:** O(1) extra space, meeting the in-place requirement.
+- **Time:** O(n log n) due to the initial descending check sort and potential extra sort at the end; plus O(n) scans.
+- **Space:** O(1) extra space aside from sort internals (which may use O(log n) or O(n) depending on implementation).
 
 ### vs. optimal
-The known optimal approach: first find the rightmost pair `(i, i+1)` where `nums[i] < nums[i+1]`. Then find the smallest element to the right of `i` that is larger than `nums[i]`, swap them, and finally reverse (not sort) `nums[i+1:]`. This is O(n) time and O(1) space. Your method deviates by incorrectly swapping with the last element and using O(n log n) sorting instead of O(n) reversal for the suffix.
+The optimal approach is O(n) time and O(1) extra space:
+1. Find the largest index `i` where `nums[i] < nums[i + 1]`.
+2. If none, reverse whole array.
+3. Find largest index `j > i` where `nums[j] > nums[i]`.
+4. Swap `nums[i]` and `nums[j]`.
+5. Reverse `nums[i+1:]`.
+
+This submission’s logic is flawed: initial descending check is unnecessary O(n log n), finding the swap partner uses difference comparison (fails with negative differences, though constraints avoid this here), and mistakenly uses `k` outside its scope.
 
 ### Improvements
-1. **Flawed swap logic** – `swap(nums[i], nums[nums.size()-1])` doesn't guarantee the next permutation. Replace with a search for the rightmost `j > i` such that `nums[j] > nums[i]`, then swap `nums[i]` and `nums[j]`.
-2. **Unnecessary `idDesc` pass** – Entire first loop is redundant; the later while loop already finds `i`, and if `i < 0` you can just reverse the whole array.
-3. **Sorting instead of reversing** – After swapping, the suffix `nums[i+1:]` is guaranteed to be in descending order initially; reversing it is O(n) and more efficient than O(n log n) sort.
-4. **Redundant return statements** – The `return` after `sort` is unnecessary; function ends naturally.
-
-### Why the percentile is low
-Even though this got “Accepted”, the hidden test cases likely didn’t expose the logic flaw, but the use of `sort` (O(n log n)) instead of `reverse` (O(n)) and the extra O(n) pass for `idDesc` add overhead. The fastest solutions execute a single pass (or two passes) and a reversal, strictly O(n) with minimal operations.
+1. **Remove preliminary descending check and unnecessary sorts**: Instead, handle the "no next permutation" case by reversing in step 2 of optimal algorithm.
+2. **Fix scoping error**: Line 33 `swap(nums[i], nums[k])` – `k` is out of scope. Use `j`, which was intended to hold the swap index.
+3. **Replace difference comparison with direct value comparison**: `nums[j] > nums[i]` is sufficient for finding the smallest larger element if scanning backwards; but here scanning forwards wrongly picks the last larger element. Change to scanning from end to find the smallest element larger than `nums[i]`.
+4. **Use reverse instead of sort for suffix**: After swap, the suffix `nums[i+1:]` is guaranteed to be non-increasing; reversing it yields sorted ascending order in O(n) vs. O(n log n).
