@@ -1,29 +1,26 @@
 ---
 problem: "Majority Element II"
 difficulty: unknown
-verdict: Compile Error
-runtime: N/A
-memory: N/A
+verdict: Accepted
+runtime: 0 ms
+memory: 8.4 MB
 date: 2026-07-17
 ---
 
 # Analysis
 
 ### Verdict summary
-The submission attempts to use the Boyer-Moore Majority Vote algorithm to find candidates that may appear more than ⌊n/3⌋ times, which is the correct approach for achieving O(n) time and O(1) space. However, the implementation contains a compile error due to a misplaced comment delimiter. Additionally, the logic for candidate selection has flaws that could lead to incorrect results.
+The solution uses the Boyer-Moore Majority Vote algorithm for two candidates, which is the optimal approach for linear time and constant space. It correctly identifies potential candidates and verifies their frequencies, but the implementation has a logical flaw in the candidate selection phase.
 
 ### Complexity
-**Time Complexity:** O(n) — Two passes through the array: one for candidate selection and one for validation.  
-**Space Complexity:** O(1) — Only a constant number of variables are used, excluding the output.
+Time: O(n) — Two passes through the array.
+Space: O(1) — Uses only constant extra space for counters and variables.
 
 ### vs. optimal
-The optimal solution for this problem is indeed the Boyer-Moore Majority Vote algorithm extended for two candidates, which runs in O(n) time and O(1) space. However, this implementation has critical issues:  
-1. The condition checks in the candidate selection loop are flawed. It incorrectly handles the assignment of `item1` and `item2` and their counts. Specifically, the conditions for initializing candidates are reversed and inconsistent with the algorithm's requirements.  
-2. The algorithm must track two candidates and their counts, decrementing both only when encountering an element different from both. This implementation's logic does not correctly reflect that.
+The Boyer-Moore Majority Vote algorithm is optimal for this problem, achieving O(n) time and O(1) space. However, the implementation contains a critical issue: the assignment of `item1` and `item2` is mishandled. The initial condition `if (e != item1 && count2 == 0)` prioritizes filling `item2` when `count2` is zero, which is incorrect. Standard implementations prioritize filling the first candidate slot when its count is zero, not the second. This may lead to incorrect candidate selection in some cases.
 
 ### Improvements
-1. **Fix the compile error:** Remove the forward slash in the comment on line 25 to make it `// Validate...` instead of `/Validate...`.
-2. **Correct the candidate selection logic:** The conditions should prioritize assigning candidates when their counts are zero. The standard approach is:
+1. **Fix candidate selection logic**: The conditions in the first loop should be symmetric. Standard approach:
    ```cpp
    if (count1 == 0 && e != item2) {
        item1 = e;
@@ -40,5 +37,7 @@ The optimal solution for this problem is indeed the Boyer-Moore Majority Vote al
        count2--;
    }
    ```
-3. **Ensure distinct candidates in validation:** The validation step correctly checks `item1 != item2` before adding `item2`, but the candidate selection must avoid duplicate candidates. The above logic ensures `item1` and `item2` are distinct during assignment.
-4. **Initialize candidates appropriately:** Use distinct sentinel values (e.g., `INT_MIN` and `INT_MAX`) to avoid conflicts with actual array values, but ensure the logic doesn't allow duplicate assignments.
+2. **Avoid redundant checks**: The verification loop uses two separate `if` statements, which is correct. However, the condition `if (cnt2 >= mini && item1 != item2)` is necessary to avoid duplicates only if `item1` and `item2` are the same. But since the algorithm should ensure distinct candidates, this is a safeguard. Alternatively, you can initialize `item1` and `item2` to distinct values (e.g., different integers) to avoid this, but it's not strictly necessary.
+
+### Why the percentile is low
+Despite being accepted, the runtime percentile is low because the implementation has a suboptimal candidate selection order. The flawed logic may cause unnecessary decrements or missed candidates in edge cases, though it passed the test suite. Corrected implementations would be more efficient and robust. Additionally, the solution uses two full passes (which is standard), but some solutions might combine verification with candidate selection in one pass for minor gains, though this is not significant.
