@@ -22,8 +22,6 @@ public:
             }
         }
 
-        /Validate the candidates by counting occurrences in nums
-        //Reset counts for el1 and el2
         int cnt1 = 0, cnt2 = 0; 
         
         for (int i = 0; i < n; i++) {
