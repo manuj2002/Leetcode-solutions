@@ -1,0 +1,58 @@
+class Solution {
+public:
+    vector<int> majorityElement(vector<int>& nums) {
+        int count1=0,count2=0;
+        int n=nums.size();
+        int item1=INT_MIN,item2=INT_MIN;
+        vector<int>ans;
+        for(auto e:nums){
+            if(e!=item1 && count2==0){
+                count2++;
+                item2=e;
+            }else if(e!=item2 && count1==0){
+                count1++;
+                item1=e;
+            }else if(e==item2){
+                count2++;
+            }else if(e==item1){
+                count1++;
+            }else{
+                count1--;
+                count2--;
+            }
+        }
+
+        /Validate the candidates by counting occurrences in nums
+        //Reset counts for el1 and el2
+        int cnt1 = 0, cnt2 = 0; 
+        
+        for (int i = 0; i < n; i++) {
+            if (nums[i] == item1) {
+            
+                cnt1++; 
+            }
+            if (nums[i] == item2) {
+                
+                cnt2++;
+            }
+        }
+
+    
+        int mini = n / 3 + 1;
+        
+        vector<int> result; 
+
+        
+        if (cnt1 >= mini) {
+            result.push_back(item1);
+        }
+        if (cnt2 >= mini && item1 != item2) {
+            result.push_back(item2); 
+        }
+
+
+        return result;
+
+       
+    }
+};
