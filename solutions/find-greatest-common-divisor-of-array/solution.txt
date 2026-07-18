@@ -1,0 +1,13 @@
+class Solution {
+public:
+    int findGCD(vector<int>& nums) {
+        int maNum=INT_MIN,miNum=INT_MAX;
+        for(auto e:nums){
+            maNum=max(maNum,e);
+            miNum=min(miNum,e);
+        }
+
+        return gcd(maNum,miNum);
+
+    }
+};
