@@ -1,30 +1,41 @@
 ---
 problem: "Binary Tree Maximum Path Sum"
 difficulty: unknown
-verdict: Compile Error
-runtime: N/A
-memory: N/A
+verdict: Accepted
+runtime: 0 ms
+memory: 8.2 MB
 date: 2026-07-19
 ---
 
 # Analysis
 
 ### Verdict summary
-The submission attempts a post-order DFS traversal to compute the maximum path sum, which is the correct approach. However, the code contains multiple syntax errors and logical flaws in updating the maximum value, preventing it from compiling or functioning correctly.
+The submitted solution correctly implements a recursive post-order traversal to compute the maximum path sum by considering path combinations through each node. The approach is fundamentally correct and solves the problem optimally, though the implementation contains redundant calculations.
 
 ### Complexity
-**Time Complexity:** O(n) - each node is visited once.  
-**Space Complexity:** O(h) - recursion stack depth proportional to tree height (O(n) worst-case for skewed trees).
+**Time Complexity:** O(n) where n is the number of nodes, as each node is visited exactly once.  
+**Space Complexity:** O(h) where h is the tree height, due to the recursion stack (O(n) worst-case for a skewed tree).
 
 ### vs. optimal
-The optimal solution uses a single DFS pass to calculate the maximum path contribution from each subtree while tracking the global maximum path sum. Your approach is conceptually correct but flawed in execution: the `maxi` update logic incorrectly overwrites values and fails to consider all path combinations (left + right + root, left + root, right + root, or root alone).
+This solution is optimal in its time and space complexity. The standard optimal approach uses a helper function that returns the maximum gain from a subtree (where "gain" is the maximum sum starting from the current node and going downward), while updating a global maximum that considers paths that "bend" through the current node (left + node + right). However, the current implementation is unnecessarily verbose in its maximum checks.
 
 ### Improvements
-1. **Fix syntax and variable names:** Line 18 lacks a semicolon. The variable `maxi` is incorrectly reassigned as `max` in lines 20-22, causing undefined behavior.  
-2. **Correct path sum logic:** Replace the flawed updates with:  
+1. **Simplify the max calculations:** The four `maxi = max(...)` calls can be consolidated. The key insight is that the maximum path through the current node is `node->val + max(0, left) + max(0, right)`, and the return value for the parent is `node->val + max(0, max(left, right))`. The current code checks all combinations explicitly.
+   
+   Better:
    ```
-   int pathSum = l + r + root->val;
-   maxi = max({maxi, pathSum, root->val + max(l, r), root->val});
-   ```  
-3. **Return value refinement:** The helper should return `max(root->val, root->val + max(l, r))` to avoid negative contributions.  
-4. **Use std::max correctly:** Replace manual comparisons with `max({...})` for clarity.
+   int leftGain = max(0, straightSum(root->left, maxi));
+   int rightGain = max(0, straightSum(root->right, maxi));
+   maxi = max(maxi, root->val + leftGain + rightGain);
+   return root->val + max(leftGain, rightGain);
+   ```
+
+2. **Handle negative values more elegantly:** The current code handles negatives correctly but with redundant comparisons. The improved version above explicitly clamps gains at 0, which is cleaner.
+
+3. **Function naming:** `straightSum` is misleading—it actually returns the maximum *straight* path sum starting from the current node going downward. A name like `maxGain` or `dfs` would be more standard.
+
+### Why the percentile is low
+Despite having optimal complexity, the percentile may be lower due to:
+- **Redundant comparisons:** The four `max` operations per node are less efficient than the two needed in the cleaner version.
+- **Compiler optimization:** The redundant checks might prevent some optimizations that the cleaner version allows.
+- **Code clarity:** While not directly affecting runtime, cleaner code often correlates with better compiler optimization and cache performance. The top solutions use the more concise gain-clamping approach.
