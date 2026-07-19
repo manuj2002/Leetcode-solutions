@@ -3,36 +3,35 @@ problem: "Binary Tree Maximum Path Sum"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.3 MB
+memory: 8.2 MB
 date: 2026-07-19
 ---
 
 # Analysis
 
-## Verdict summary
-The submission uses a correct post-order DFS approach to compute the maximum path sum. It calculates the maximum path that can be extended upward from each node while simultaneously tracking the global maximum. The approach is fundamentally correct and solves the problem optimally.
+### Verdict summary
+The code implements a correct post-order DFS approach to compute the maximum path sum by tracking both the maximum path through each node and the maximum single-branch sum that can be extended upward. This is the right approach for the problem.
 
-## Complexity
-- **Time complexity:** O(n) where n is the number of nodes. Each node is visited exactly once.
-- **Space complexity:** O(h) where h is the tree height, due to recursion stack. In worst-case (skewed tree), this becomes O(n).
+### Complexity
+**Time complexity:** O(n) - Every node is visited exactly once.  
+**Space complexity:** O(h) - Due to recursion stack height, which is O(n) worst-case for skewed trees, O(log n) for balanced trees.
 
-## vs. optimal
-This solution **is optimal** in terms of time and space complexity. The standard optimal approach for this problem is exactly what's implemented: a DFS that computes the maximum path sum passing through each node while returning the maximum sum that can be extended upward. No significant differences from the optimal approach.
+### vs. optimal
+This IS the optimal approach. The solution correctly computes two values at each node: the maximum path sum that includes the current node (which may involve both children for the global max), and the maximum single-branch sum that can be passed to the parent (using only one child). The time and space complexities are optimal.
 
-## Improvements
-1. **Function naming**: `straightSum` is misleading - it actually returns the maximum sum of a path starting from the current node and going downward. Better names would be `maxPathDown` or `dfs`.
-2. **Redundant max checks**: The three `maxi = max(...)` calls can be simplified:
+### Improvements
+1. **Function naming:** `straightSum` is misleading - it actually returns the maximum branch sum, not a "straight" path. Better names like `dfs` or `maxBranchSum` would improve readability.
+2. **Return value handling:** The three `maxi` updates could be consolidated:
    ```cpp
-   maxi = max({maxi, l + r + root->val, root->val, root->val + max(l, r)});
+   int branch_sum = root->val + max(l, r);
+   maxi = max({maxi, l + r + root->val, root->val, branch_sum});
+   return max(root->val, branch_sum); // Actually branch_sum already includes root->val
    ```
-3. **Return value optimization**: The return statement `return root->val + max(l, r)` should clamp negative values to zero for better clarity:
-   ```cpp
-   return max(root->val, root->val + max(l, r));
-   ```
-4. **Handle negative sums properly**: When `l` or `r` are negative, they should be treated as 0 since we can choose not to include them.
+3. **Edge case optimization:** Check for null children before recursive calls to avoid function call overhead (though compiler may optimize this).
+4. **Integer safety:** Since node values can be negative, the return value should be `max(root->val, root->val + max(l, r))` to ensure we don't return a sum worse than just the node itself.
 
-## Why the percentile is low
-Despite being O(n) complexity, the percentile might be lower due to:
-- **Unnecessary comparisons**: The code performs more max operations than needed. An optimized version would compute `max(0, l)` and `max(0, r)` first, then calculate path sums.
-- **Recursive overhead**: While minimal, some solutions might use iterative DFS to avoid recursion overhead.
-- **Code clarity**: The logic, while correct, is less readable than the standard solution that explicitly handles negative contributions by taking `max(0, left/right)`.
+### Why the percentile is low
+Despite being algorithmically optimal, the low percentile likely stems from:
+- **Multiple max operations:** The three separate `max` calls could be combined into one, reducing instruction count.
+- **Function call overhead:** The recursion is necessary, but some solutions use iterative DFS with explicit stacks which can be faster in practice.
+- **Memory locality:** The recursive solution has worse cache performance compared to iterative approaches that use a contiguous stack array.
