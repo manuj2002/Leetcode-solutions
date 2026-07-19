@@ -20,7 +20,7 @@
         r=0;
         d=0;
     }
- }
+ };
 class Solution {
 public:
     Str  largeDiamter(TreeNode* root){
