@@ -16,10 +16,9 @@ public:
         return 0;
         int l=straightSum(root->left,maxi);
         int r=straightSum(root->right,maxi);
-        maxi=max(maxi,max(l,r));
         maxi=max(maxi,l+r+root->val);
         maxi=max(maxi,root->val);
-         maxi=max(maxi,root->val+max(l,r));
+        maxi=max(maxi,root->val+max(l,r));
 
         return root->val+max(l,r);
      }
