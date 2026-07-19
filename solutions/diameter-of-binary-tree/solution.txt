@@ -31,7 +31,11 @@ public:
          Str left=largeDiamter(root->left);
          Str right=largeDiamter(root->right);
          int l=max(left.r,left.l)+1;
+         if(root->left==NULL)
+          l=0;
          int r=max(right.r,right.l)+1;
+         f(root->right==NULL)
+          r=0;
          ans.l=l;
          ans.r=r;
          ans.d=max(max(left.d,right.d),l+r);
