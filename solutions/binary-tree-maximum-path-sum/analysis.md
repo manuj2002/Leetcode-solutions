@@ -3,39 +3,36 @@ problem: "Binary Tree Maximum Path Sum"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.2 MB
+memory: 8.3 MB
 date: 2026-07-19
 ---
 
 # Analysis
 
-### Verdict summary
-The submitted solution correctly implements a recursive post-order traversal to compute the maximum path sum by considering path combinations through each node. The approach is fundamentally correct and solves the problem optimally, though the implementation contains redundant calculations.
+## Verdict summary
+The submission uses a correct post-order DFS approach to compute the maximum path sum. It calculates the maximum path that can be extended upward from each node while simultaneously tracking the global maximum. The approach is fundamentally correct and solves the problem optimally.
 
-### Complexity
-**Time Complexity:** O(n) where n is the number of nodes, as each node is visited exactly once.  
-**Space Complexity:** O(h) where h is the tree height, due to the recursion stack (O(n) worst-case for a skewed tree).
+## Complexity
+- **Time complexity:** O(n) where n is the number of nodes. Each node is visited exactly once.
+- **Space complexity:** O(h) where h is the tree height, due to recursion stack. In worst-case (skewed tree), this becomes O(n).
 
-### vs. optimal
-This solution is optimal in its time and space complexity. The standard optimal approach uses a helper function that returns the maximum gain from a subtree (where "gain" is the maximum sum starting from the current node and going downward), while updating a global maximum that considers paths that "bend" through the current node (left + node + right). However, the current implementation is unnecessarily verbose in its maximum checks.
+## vs. optimal
+This solution **is optimal** in terms of time and space complexity. The standard optimal approach for this problem is exactly what's implemented: a DFS that computes the maximum path sum passing through each node while returning the maximum sum that can be extended upward. No significant differences from the optimal approach.
 
-### Improvements
-1. **Simplify the max calculations:** The four `maxi = max(...)` calls can be consolidated. The key insight is that the maximum path through the current node is `node->val + max(0, left) + max(0, right)`, and the return value for the parent is `node->val + max(0, max(left, right))`. The current code checks all combinations explicitly.
-   
-   Better:
+## Improvements
+1. **Function naming**: `straightSum` is misleading - it actually returns the maximum sum of a path starting from the current node and going downward. Better names would be `maxPathDown` or `dfs`.
+2. **Redundant max checks**: The three `maxi = max(...)` calls can be simplified:
+   ```cpp
+   maxi = max({maxi, l + r + root->val, root->val, root->val + max(l, r)});
    ```
-   int leftGain = max(0, straightSum(root->left, maxi));
-   int rightGain = max(0, straightSum(root->right, maxi));
-   maxi = max(maxi, root->val + leftGain + rightGain);
-   return root->val + max(leftGain, rightGain);
+3. **Return value optimization**: The return statement `return root->val + max(l, r)` should clamp negative values to zero for better clarity:
+   ```cpp
+   return max(root->val, root->val + max(l, r));
    ```
+4. **Handle negative sums properly**: When `l` or `r` are negative, they should be treated as 0 since we can choose not to include them.
 
-2. **Handle negative values more elegantly:** The current code handles negatives correctly but with redundant comparisons. The improved version above explicitly clamps gains at 0, which is cleaner.
-
-3. **Function naming:** `straightSum` is misleading—it actually returns the maximum *straight* path sum starting from the current node going downward. A name like `maxGain` or `dfs` would be more standard.
-
-### Why the percentile is low
-Despite having optimal complexity, the percentile may be lower due to:
-- **Redundant comparisons:** The four `max` operations per node are less efficient than the two needed in the cleaner version.
-- **Compiler optimization:** The redundant checks might prevent some optimizations that the cleaner version allows.
-- **Code clarity:** While not directly affecting runtime, cleaner code often correlates with better compiler optimization and cache performance. The top solutions use the more concise gain-clamping approach.
+## Why the percentile is low
+Despite being O(n) complexity, the percentile might be lower due to:
+- **Unnecessary comparisons**: The code performs more max operations than needed. An optimized version would compute `max(0, l)` and `max(0, r)` first, then calculate path sums.
+- **Recursive overhead**: While minimal, some solutions might use iterative DFS to avoid recursion overhead.
+- **Code clarity**: The logic, while correct, is less readable than the standard solution that explicitly handles negative contributions by taking `max(0, left/right)`.
