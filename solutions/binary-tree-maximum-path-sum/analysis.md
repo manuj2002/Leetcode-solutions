@@ -10,22 +10,21 @@ date: 2026-07-19
 # Analysis
 
 ### Verdict summary
-The submission attempts a recursive DFS approach to compute the maximum path sum, which is the correct high-level strategy. However, the implementation contains multiple critical errors, including a missing semicolon, incorrect variable names, and wrong parameter passing, making it uncompilable.
+The submission attempts a post-order DFS traversal to compute the maximum path sum, which is the correct approach. However, the code contains multiple syntax errors and logical flaws in updating the maximum value, preventing it from compiling or functioning correctly.
 
 ### Complexity
-- **Time Complexity:** O(n) — each node is visited exactly once.
-- **Space Complexity:** O(h) — due to recursion stack, where h is the tree height (worst-case O(n) for a skewed tree).
+**Time Complexity:** O(n) - each node is visited once.  
+**Space Complexity:** O(h) - recursion stack depth proportional to tree height (O(n) worst-case for skewed trees).
 
 ### vs. optimal
-The optimal solution uses a single DFS traversal to compute two values at each node: the maximum path sum that can be extended upward (to be used by the parent) and the global maximum path sum (which may include the current node as the "root" of a path). This submission correctly recognizes the need to track a global maximum and compute local contributions, but the implementation is flawed. The optimal approach would handle four cases at each node: the node alone, node + left branch, node + right branch, and node + both branches as a complete path.
+The optimal solution uses a single DFS pass to calculate the maximum path contribution from each subtree while tracking the global maximum path sum. Your approach is conceptually correct but flawed in execution: the `maxi` update logic incorrectly overwrites values and fails to consider all path combinations (left + right + root, left + root, right + root, or root alone).
 
 ### Improvements
-1. **Fix function signature and parameters:** The recursive function `straightSum` is called with only one argument on lines 16 and 17, but its definition requires two parameters (`root` and `maxi`). Pass the `maxi` reference in all recursive calls.
-2. **Correct variable names:** Lines 19–22 use undefined variables `max` and `maxi` incorrectly. Use `maxi` consistently for the global maximum and fix the calculations.
-3. **Add missing semicolon:** Insert a semicolon after `int r=straightSum(root->right)` on line 18.
-4. **Logical error in calculations:** The current max-updating logic is jumbled. The correct logic should be:
-   ```cpp
-   int local_max = max(root->val, root->val + max(l, r));
-   maxi = max(maxi, max(local_max, l + r + root->val));
-   return local_max;
+1. **Fix syntax and variable names:** Line 18 lacks a semicolon. The variable `maxi` is incorrectly reassigned as `max` in lines 20-22, causing undefined behavior.  
+2. **Correct path sum logic:** Replace the flawed updates with:  
    ```
+   int pathSum = l + r + root->val;
+   maxi = max({maxi, pathSum, root->val + max(l, r), root->val});
+   ```  
+3. **Return value refinement:** The helper should return `max(root->val, root->val + max(l, r))` to avoid negative contributions.  
+4. **Use std::max correctly:** Replace manual comparisons with `max({...})` for clarity.
