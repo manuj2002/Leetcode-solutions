@@ -3,35 +3,38 @@ problem: "Binary Tree Maximum Path Sum"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.2 MB
+memory: 8.1 MB
 date: 2026-07-19
 ---
 
 # Analysis
 
 ### Verdict summary
-The code implements a correct post-order DFS approach to compute the maximum path sum by tracking both the maximum path through each node and the maximum single-branch sum that can be extended upward. This is the right approach for the problem.
+The solution uses a post-order DFS traversal to compute the maximum path sum, which is the correct approach. It calculates both the maximum path sum that can be extended upward and the global maximum path sum. The implementation is functionally correct but has code structure issues.
 
 ### Complexity
-**Time complexity:** O(n) - Every node is visited exactly once.  
-**Space complexity:** O(h) - Due to recursion stack height, which is O(n) worst-case for skewed trees, O(log n) for balanced trees.
+- **Time complexity:** O(n) - Each node is visited exactly once.
+- **Space complexity:** O(h) - Due to recursion stack, where h is the height of the tree.
 
 ### vs. optimal
-This IS the optimal approach. The solution correctly computes two values at each node: the maximum path sum that includes the current node (which may involve both children for the global max), and the maximum single-branch sum that can be passed to the parent (using only one child). The time and space complexities are optimal.
+This IS the optimal approach for the problem. The standard solution uses DFS to compute:
+1. Maximum sum of any path starting from current node and going downward (return value)
+2. Global maximum path sum that may include the current node as the "root" of the path
 
 ### Improvements
-1. **Function naming:** `straightSum` is misleading - it actually returns the maximum branch sum, not a "straight" path. Better names like `dfs` or `maxBranchSum` would improve readability.
-2. **Return value handling:** The three `maxi` updates could be consolidated:
+1. **Function naming**: `straightSum` is misleading - `maxPathDown` or `dfs` would be clearer
+2. **Redundant max operations**: The three `maxi = max(...)` calls can be consolidated into:
    ```cpp
-   int branch_sum = root->val + max(l, r);
-   maxi = max({maxi, l + r + root->val, root->val, branch_sum});
-   return max(root->val, branch_sum); // Actually branch_sum already includes root->val
+   maxi = max({maxi, l + r + root->val, root->val, root->val + max(l, r)});
    ```
-3. **Edge case optimization:** Check for null children before recursive calls to avoid function call overhead (though compiler may optimize this).
-4. **Integer safety:** Since node values can be negative, the return value should be `max(root->val, root->val + max(l, r))` to ensure we don't return a sum worse than just the node itself.
+3. **Return logic**: The return statement can be simplified to:
+   ```cpp
+   return max(root->val, root->val + max(l, r));
+   ```
+   (this is already optimal)
 
 ### Why the percentile is low
-Despite being algorithmically optimal, the low percentile likely stems from:
-- **Multiple max operations:** The three separate `max` calls could be combined into one, reducing instruction count.
-- **Function call overhead:** The recursion is necessary, but some solutions use iterative DFS with explicit stacks which can be faster in practice.
-- **Memory locality:** The recursive solution has worse cache performance compared to iterative approaches that use a contiguous stack array.
+Despite O(n) runtime, this implementation likely has slightly higher constant factors due to:
+- Multiple separate max operations instead of a single max call
+- Non-optimal compiler optimizations due to code structure
+- The fastest solutions use the same algorithm but with more efficient implementations (e.g., using references consistently, better variable naming for compiler optimization)
