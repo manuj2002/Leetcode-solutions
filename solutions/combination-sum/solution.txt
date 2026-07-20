@@ -18,7 +18,7 @@ public:
         return;
     }
     vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
-        vetcor<int>v;
+        vector<int>v;
         vector<vector<int>>ans;
         combo(0,candidates,target,v,ans);
         return ans;
