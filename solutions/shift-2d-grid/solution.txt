@@ -13,7 +13,7 @@ public:
             }
         }
         grid[0][0]=store[store.size()-1];
-        for(int i=1;i<grid.size()-1;i++){
+        for(int i=1;i<grid.size();i++){
             grid[i][0]=store[i-1];
         }
 
