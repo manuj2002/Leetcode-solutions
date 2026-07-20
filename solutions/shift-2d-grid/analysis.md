@@ -3,26 +3,26 @@ problem: "Shift 2D Grid"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.5 MB
+memory: 8.6 MB
 date: 2026-07-20
 ---
 
 # Analysis
 
 ### Verdict summary
-The submission uses a simulation approach that performs k shifts by repeatedly applying a single-shift function. While correct, this approach is inefficient for large k and does not leverage the cyclic nature of the problem.
+The approach uses a simulation that performs k shifts by rotating the grid one step at a time. While correct, this is inefficient for large k since each shift requires O(m*n) operations, leading to O(k*m*n) total time.
 
 ### Complexity
-- **Time complexity:** O(m * n * k), where m and n are the dimensions of the grid. Each `rotate` call does O(m * n) work, and it is called k times.
-- **Space complexity:** O(m) for the `store` vector in each rotation, which is reused across calls.
+Time: O(k * m * n) — For each of k shifts, the code traverses most elements in the m x n grid.
+Space: O(m) — The `store` vector holds m elements for the last column.
 
 ### vs. optimal
-The optimal approach computes the effective shift modulo the total number of elements (m * n), then maps each element directly to its final position without simulation. This runs in O(m * n) time and O(1) space (excluding output). The submission's simulation is suboptimal for large k.
+The optimal approach flattens the grid into a 1D array of size m*n, computes the effective shift modulo m*n, and reconstructs the grid. This runs in O(m*n) time and O(m*n) space. Your simulation is suboptimal for large k (up to 100) and grid sizes (up to 50x50=2500 elements), as k*m*n could be 250,000 operations vs. 2500 for the optimal.
 
 ### Improvements
-1. **Avoid simulation:** Precompute k mod (m*n) and construct the result by calculating the flattened index shift.
-2. **Eliminate temporary storage:** The current `rotate` uses a vector to store last column elements and does row-wise swaps, which is inefficient.
-3. **Use direct indexing:** Instead of swapping elements in place, create a new grid and assign each element based on (i*n + j - k) mod (m*n).
+1. Replace simulation with modulo indexing: Flatten the grid, compute start index = (m*n - k) % (m*n), and map each position (i, j) to index (start + i*n + j) % (m*n) in the flattened array.
+2. Avoid O(k) outer loop: The current loop runs k times, which is inefficient when k is large.
+3. Eliminate redundant swaps: The inner loop uses a swap chain that is less efficient than direct assignment.
 
 ### Why the percentile is low
-Faster solutions compute the effective rotation in one pass by flattening the grid conceptually and using modulo arithmetic to determine each element's new position. This avoids the O(k) loop and reduces the constant factors by eliminating unnecessary swaps and temporary storage.
+Faster solutions use the modulo indexing method to compute the shifted grid in a single pass without simulating each shift. Your solution performs up to 100 shifts, each involving O(2500) operations, while the optimal does exactly 2500 operations total.
