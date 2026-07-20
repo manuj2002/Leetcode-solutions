@@ -1,42 +1,27 @@
 ---
 problem: "Combination Sum"
 difficulty: unknown
-verdict: Compile Error
-runtime: N/A
-memory: N/A
+verdict: Accepted
+runtime: 47 ms
+memory: 32.1 MB
 date: 2026-07-20
 ---
 
 # Analysis
 
 ### Verdict summary
-The code uses a backtracking approach with recursion to generate combinations. This is a correct strategy for the problem, but the implementation has a syntax error and inefficiencies in handling the combinations.
+The approach uses backtracking to explore all combinations by including each candidate multiple times, which is correct for the problem. However, it is inefficient due to multiple vector copies and redundant recursive calls.
 
 ### Complexity
-**Time Complexity:** O(N^T) — In the worst case, the algorithm explores all possible combinations where T is the target (each element can be taken up to T times).  
-**Space Complexity:** O(T) — The recursion depth is bounded by T (since at most T elements are added to a combination), but the space for storing all combinations is output-dependent.
+Time: O(2^N * T) in the worst case, where N is the number of candidates and T is the target, due to the branching factor. Space: O(T * number of combinations) for storing results and recursion stack.
 
 ### vs. optimal
-The optimal approach for this problem is backtracking with pruning. The code attempts this but has a key inefficiency: it creates a new vector `t` for every candidate at every recursion level, leading to unnecessary copying. The standard optimal approach uses a single vector that is modified in-place (pushed and popped) to avoid copying overhead. Additionally, sorting the array and breaking early when the candidate exceeds the remaining target is common for pruning.
+The optimal approach uses standard backtracking without creating vector copies at every step. It typically uses a single vector reference (passed by reference) and pops after recursion to avoid copies. The time complexity is the same worst-case, but it is much faster in practice due to reduced overhead.
 
 ### Improvements
-1. **Fix the syntax error:** On line 21, change `vetcor` to `vector`.
-2. **Avoid vector copies:** Instead of creating copies (`vector<int> t = v`), use a single vector passed by reference and backtrack by popping after recursion. This reduces both time and space overhead.
-3. **Add pruning:** Sort the candidates first and break early if the current candidate exceeds the remaining target. This avoids unnecessary recursive calls.
-4. **Use iterative inclusion:** The current code uses a loop to add multiple copies of the same candidate, but the recursion should start at the same index (not i+1) when including the same candidate again, which is more efficient and idiomatic.
+1. Avoid creating a new vector `t` for each candidate repetition; instead, use a single vector `v` that is modified and then backtracked (pushed and popped).
+2. Eliminate the separate recursive call for skipping the candidate; instead, directly iterate and recurse with the candidate included.
+3. Sort the candidates to allow early termination when the remaining target is less than the current candidate.
 
-Example improved code structure:
-```cpp
-void combo(int start, vector<int>& candidates, int target, vector<int>& current, vector<vector<int>>& ans) {
-    if (target == 0) {
-        ans.push_back(current);
-        return;
-    }
-    for (int i = start; i < candidates.size(); i++) {
-        if (candidates[i] > target) break;
-        current.push_back(candidates[i]);
-        combo(i, candidates, target - candidates[i], current, ans);
-        current.pop_back();
-    }
-}
-```
+### Why the percentile is low
+The solution creates multiple vector copies (like `vector<int>t=v;`) at each step, which is expensive. Faster solutions use a single vector that is modified in-place and backtracked by popping. Also, sorting the array and breaking early when the candidate exceeds the remaining target improves performance.
