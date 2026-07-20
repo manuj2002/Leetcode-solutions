@@ -7,9 +7,9 @@ public:
     }
     subSet(i+1,nums,v,ans);
     v.push_back(nums[i]);
-    subset(i+1,nums,v,ans);
+    subSet(i+1,nums,v,ans);
      v.pop_back();
-     return ans;
+     return ;
   }
     vector<vector<int>> subsets(vector<int>& nums) {
         vector<vector<int>>ans;
