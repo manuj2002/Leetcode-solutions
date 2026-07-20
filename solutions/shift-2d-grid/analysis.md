@@ -2,27 +2,27 @@
 problem: "Shift 2D Grid"
 difficulty: unknown
 verdict: Accepted
-runtime: 0 ms
-memory: 8.6 MB
+runtime: 39 ms
+memory: 48.6 MB
 date: 2026-07-20
 ---
 
 # Analysis
 
 ### Verdict summary
-The approach uses a simulation that performs k shifts by rotating the grid one step at a time. While correct, this is inefficient for large k since each shift requires O(m*n) operations, leading to O(k*m*n) total time.
+The submission uses a simulation approach that performs k shifts by rotating the grid one step at a time. While correct, this approach is inefficient for large k due to its high time complexity.
 
 ### Complexity
-Time: O(k * m * n) — For each of k shifts, the code traverses most elements in the m x n grid.
-Space: O(m) — The `store` vector holds m elements for the last column.
+- **Time complexity:** O(k * m * n), where m and n are the grid dimensions. Each `rotate` call does O(m * n) work (due to inner loops and swaps), and this is called k times.
+- **Space complexity:** O(m) for the `store` vector, which is acceptable but not optimal.
 
 ### vs. optimal
-The optimal approach flattens the grid into a 1D array of size m*n, computes the effective shift modulo m*n, and reconstructs the grid. This runs in O(m*n) time and O(m*n) space. Your simulation is suboptimal for large k (up to 100) and grid sizes (up to 50x50=2500 elements), as k*m*n could be 250,000 operations vs. 2500 for the optimal.
+The optimal approach flattens the grid into a 1D array of size m*n, computes the effective shift modulo m*n, and then reconstructs the grid. This runs in O(m*n) time and O(m*n) space. The submission's simulation is suboptimal because it performs k shifts individually, which is inefficient when k is large (up to 100, and m*n up to 2500).
 
 ### Improvements
-1. Replace simulation with modulo indexing: Flatten the grid, compute start index = (m*n - k) % (m*n), and map each position (i, j) to index (start + i*n + j) % (m*n) in the flattened array.
-2. Avoid O(k) outer loop: The current loop runs k times, which is inefficient when k is large.
-3. Eliminate redundant swaps: The inner loop uses a swap chain that is less efficient than direct assignment.
+1. **Avoid simulation for large k:** Instead of simulating k shifts, compute the effective shift as `k % (m*n)`. If zero, return the original grid; otherwise, flatten the grid, rotate the flattened array by `k % (m*n)` positions, and reshape.
+2. **Eliminate redundant operations:** The current `rotate` function uses a temporary vector and nested loops. This can be replaced with a single pass over a flattened array.
+3. **Use direct indexing:** After flattening, the new grid can be constructed by mapping each index (i, j) to the flattened index `(i*n + j - k) % (m*n)` (adjusted for negative modulo).
 
 ### Why the percentile is low
-Faster solutions use the modulo indexing method to compute the shifted grid in a single pass without simulating each shift. Your solution performs up to 100 shifts, each involving O(2500) operations, while the optimal does exactly 2500 operations total.
+The runtime percentile is low because the solution simulates each shift individually, leading to unnecessary operations when k is large. Faster solutions compute the effective shift modulo the grid size and directly construct the result without iterative steps, reducing the time complexity from O(k*m*n) to O(m*n).
