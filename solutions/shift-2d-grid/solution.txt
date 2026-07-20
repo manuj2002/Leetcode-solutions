@@ -14,7 +14,7 @@ public:
         }
         grid[0][0]=store[store.size()-1];
         for(int i=1;i<grid.size()-1;i++){
-            grid[i][0]=store[i];
+            grid[i][0]=store[i-1];
         }
 
         return grid;
