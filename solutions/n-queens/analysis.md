@@ -3,31 +3,24 @@ problem: "N-Queens"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.3 MB
+memory: 10.2 MB
 date: 2026-07-21
 ---
 
 # Analysis
 
 ### Verdict summary
-This submission attempts to solve the N-Queens problem using backtracking, which is the correct approach. However, the implementation contains critical logical errors in the `check` function, failing to correctly validate queen placements along diagonals and columns. The code will not produce correct solutions.
+The solution uses backtracking to explore all valid queen placements row by row, which is the standard approach for N-Queens. The implementation correctly generates all distinct solutions and is efficient enough for the constraint n ≤ 9.
 
 ### Complexity
-**Time Complexity:** The code attempts backtracking but with an incorrect pruning condition. The flawed `check` function runs in O(n) per call, but since the recursion is broken prematurely (due to returning `true` after one valid path), it fails to explore all possibilities. Actual runtime is undefined due to logical errors.
-
-**Space Complexity:** O(n²) for storing the board state, which is standard. However, the recursion stack depth is O(n), which is acceptable.
+**Time complexity:** O(N!) — The backtracking explores up to N choices in the first row, N-1 in the second (minus invalid ones), etc., leading to factorial growth.  
+**Space complexity:** O(N²) — The `curr` board state is stored as N strings of length N, and the recursion stack goes up to depth N.
 
 ### vs. optimal
-The optimal approach uses backtracking with efficient validation using three boolean arrays for columns and two diagonals (O(1) per check). This code’s validation is flawed: it only checks for queens in the same row/column? and has incorrect diagonal checks (e.g., it only scans upward-left and upward-right but misses downward directions and doesn’t account for the current row). It also stops after finding one solution per branch due to `return true` in `Nqueens`, instead of collecting all solutions.
+This solution is optimal for generating all distinct configurations. The standard optimal approach uses backtracking with three boolean arrays (for columns and two diagonals) to check validity in O(1) time per cell. This implementation uses O(N) time per check, which is acceptable for n ≤ 9 but would not scale well for larger n.
 
 ### Improvements
-1. **Fix validation logic:** The `check` function should verify:
-   - No queen in the same column (for rows above current).
-   - No queen on the same diagonal (both left and right) for rows above.
-   Currently, it checks the current row/column? and has broken diagonal loops.
-2. **Remove early termination:** `Nqueens` returns `true` after one solution, but the problem requires all distinct solutions. Change it to backtrack fully without returning early.
-3. **Optimize validation:** Use arrays to track occupied columns and diagonals for O(1) checks instead of O(n) loops.
-4. **Code clarity:** Avoid global-like state; pass necessary parameters (e.g., column/diagonal trackers) recursively.
-
-### Why the percentile is low
-The code is fundamentally incorrect and would fail most test cases. Correct solutions use efficient validation and proper backtracking to explore all possibilities. This implementation misses solutions due to broken checks and premature termination.
+1. **Use arrays for O(1) validity checks:** Replace the O(N) `check` function with three boolean arrays (for columns, main diagonals, and anti-diagonals) to track occupied lines. This reduces per-place checks from O(N) to O(1).
+2. **Avoid string reconstruction:** Preallocate the board as a vector of strings once and reuse it, but avoid building strings row-by-row in `solveNQueens`. Instead, initialize `curr` with n strings of n '.' characters directly.
+3. **Remove redundant backtracking return value:** The function `Nqueens` returns a bool, but this is unused in the solution generation. Since all solutions are needed, not just the first, the return value is unnecessary and can be made void.
+4. **Optimize diagonal indexing:** For diagonal arrays, use indices `i + j` for anti-diagonals and `i - j + n - 1` for main diagonals to avoid the while-loop checks.
