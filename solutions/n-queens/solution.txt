@@ -39,10 +39,15 @@ bool Nqueens(int i, vector<vector<string>>&ans,vector<string>&curr,int n){
         return true;
     }
 
+    bool next1=false;
+
     for(int j=0;j<n;j++){
         if(check(n,curr,i,j)){
              curr[i][j]='Q';
              bool next=Nqueens(i+1,ans,curr,n);
+             if(next){
+                next1=true;
+             }
              curr[i][j]='.';
              if(!next){
                 return false;
@@ -50,7 +55,7 @@ bool Nqueens(int i, vector<vector<string>>&ans,vector<string>&curr,int n){
         }
     }
 
-    return false;
+    return next1;
 }
     vector<vector<string>> solveNQueens(int n) {
         vector<string>curr;
