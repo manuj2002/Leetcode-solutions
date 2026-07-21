@@ -3,43 +3,31 @@ problem: "N-Queens"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.1 MB
+memory: 8.7 MB
 date: 2026-07-21
 ---
 
 # Analysis
 
 ### Verdict summary
-The code uses backtracking with a correct overall strategy but contains a critical bug in the diagonal collision checks that prevented it from finding all solutions. While the row-by-row placement approach is standard, the implementation fails to validate the upward diagonals correctly due to missing return statements in the collision detection logic.
+The submission uses a standard backtracking approach to solve the N-Queens problem, which is fundamentally correct. However, the implementation contains significant logical errors in the collision detection and backtracking logic that would prevent it from finding all solutions. The code as shown would not actually work correctly—particularly the diagonal checks that lack `return` statements and the premature backtracking logic.
 
 ### Complexity
-**Time Complexity:** O(N!) in the worst case, though pruning occurs. The `check` function runs in O(N) per call.  
-**Space Complexity:** O(N²) for the board storage, plus O(N) for the recursion stack.
+- **Time complexity**: O(N!) in theory, but due to flawed diagonal checking (which doesn't actually return false when it should), the true complexity is undefined. With proper fixes, it would be O(N!).
+- **Space complexity**: O(N²) for the board representation, plus O(N) for recursion depth.
 
 ### vs. optimal
-The optimal approach for N-Queens uses backtracking with O(1) collision checks via sets or bitmasking for diagonals. This solution attempts the same backtracking strategy but is suboptimal due to:
-1. **Inefficient collision checks:** The `check` function uses O(N) scans instead of O(1) lookups.
-2. **Incorrect pruning:** The code returns `false` after the first failed row (line 36), which aborts exploration prematurely. This is a logic error, not a valid optimization.
+The optimal approach for N-Queens uses backtracking with efficient O(1) collision checks using hash sets for columns and diagonals. This implementation attempts that but fails in execution: the diagonal checks are broken (missing `return` statements), and the backtracking logic incorrectly terminates early when a row has no solution (the `if(!next) return false` part), which prevents finding all solutions.
 
 ### Improvements
-1. **Fix the diagonal checks:** Lines 19 and 26 are missing `return false` after detecting a collision. They should read:
-   ```cpp
-   if(curr[i1][j1]=='Q') return false;
-   ```
-2. **Remove premature backtracking:** Change lines 35–38 to always continue searching after backtracking:
-   ```cpp
-   curr[i][j]='Q';
-   Nqueens(i+1,ans,curr,n); // Remove bool assignment
-   curr[i][j]='.';
-   ```
-3. **Optimize collision tracking:** Use boolean arrays for columns and diagonals to reduce `check` to O(1):
-   ```cpp
-   vector<bool> col(n), diag1(2*n-1), diag2(2*n-1);
-   ```
-4. **Use a more idiomatic board initialization:**
-   ```cpp
-   vector<string> curr(n, string(n, '.'));
-   ```
+1. **Fix diagonal collision checks**: The diagonal while-loops detect a collision but don’t return false (just evaluate `false` without returning). Add `return false` after each detection.
+2. **Remove early termination**: Delete the `if(!next) return false` block—it incorrectly stops the search after the first failing row, preventing exploration of other columns.
+3. **Use sets for O(1) checks**: Replace linear scans with unordered_sets for columns and diagonals to reduce collision checks from O(N) to O(1).
+4. **Simplify board initialization**: Use `vector<string> curr(n, string(n, '.'))` for cleaner initialization.
 
 ### Why the percentile is low
-Faster solutions use O(1) collision checks with arrays or bit masks instead of O(N) scans. This implementation’s diagonal checks are both inefficient and broken, causing redundant work and incorrect results. The premature termination in `Nqueens` further reduces the number of solutions found, though the code passed due to weak test cases.
+The code appears accepted but likely passed due to weak test cases or was fixed after submission (the shown code has critical bugs). Faster solutions use:
+- Bitmasking to represent threats in O(1) time.
+- Iterative backtracking to avoid recursion overhead.
+- Diagonal indexing via `row-col` and `row+col` stored in sets for instant checks.
+This implementation uses slower O(N) checks per placement and has flawed logic that would hinder performance on larger N.
