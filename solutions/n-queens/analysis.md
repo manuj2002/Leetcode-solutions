@@ -3,27 +3,31 @@ problem: "N-Queens"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.7 MB
+memory: 8.3 MB
 date: 2026-07-21
 ---
 
 # Analysis
 
 ### Verdict summary
-The approach uses backtracking with a correct base case but has flawed collision checks. It is fundamentally correct but inefficient due to redundant checks and unnecessary return values.
+This submission attempts to solve the N-Queens problem using backtracking, which is the correct approach. However, the implementation contains critical logical errors in the `check` function, failing to correctly validate queen placements along diagonals and columns. The code will not produce correct solutions.
 
 ### Complexity
-**Time**: O(N!) in the worst case due to backtracking, but with an inefficient O(N) per placement check, leading to O(N * N!) overall.
-**Space**: O(N²) for the board storage and O(N) for the recursion stack.
+**Time Complexity:** The code attempts backtracking but with an incorrect pruning condition. The flawed `check` function runs in O(n) per call, but since the recursion is broken prematurely (due to returning `true` after one valid path), it fails to explore all possibilities. Actual runtime is undefined due to logical errors.
+
+**Space Complexity:** O(n²) for storing the board state, which is standard. However, the recursion stack depth is O(n), which is acceptable.
 
 ### vs. optimal
-The optimal approach for N-Queens uses backtracking with O(1) per placement checks by tracking attacked columns and diagonals via boolean arrays. This reduces the per-placement check from O(N) to O(1), making the overall complexity O(N!) without the linear multiplier.
+The optimal approach uses backtracking with efficient validation using three boolean arrays for columns and two diagonals (O(1) per check). This code’s validation is flawed: it only checks for queens in the same row/column? and has incorrect diagonal checks (e.g., it only scans upward-left and upward-right but misses downward directions and doesn’t account for the current row). It also stops after finding one solution per branch due to `return true` in `Nqueens`, instead of collecting all solutions.
 
 ### Improvements
-1. **Diagonal checking is broken**: The loops for diagonals don't break early and have a logic error (they return `false` incorrectly). They should return false immediately upon finding a queen, but currently they don't—the code has statements like `false;` that do nothing. This must be fixed to `return false`.
-2. **Use arrays for attacked directions**: Instead of scanning the entire board, maintain boolean arrays for columns, primary diagonals (i+j), and anti-diagonals (i-j+n-1) to check in O(1).
-3. **Remove redundant return value**: The function `Nqueens` returns a bool but doesn't use it for anything. It should be `void` since we want all solutions, not just the first.
-4. **Preallocate the board**: Avoid building the initial board with string appends; use `string(n, '.')` for efficiency.
+1. **Fix validation logic:** The `check` function should verify:
+   - No queen in the same column (for rows above current).
+   - No queen on the same diagonal (both left and right) for rows above.
+   Currently, it checks the current row/column? and has broken diagonal loops.
+2. **Remove early termination:** `Nqueens` returns `true` after one solution, but the problem requires all distinct solutions. Change it to backtrack fully without returning early.
+3. **Optimize validation:** Use arrays to track occupied columns and diagonals for O(1) checks instead of O(n) loops.
+4. **Code clarity:** Avoid global-like state; pass necessary parameters (e.g., column/diagonal trackers) recursively.
 
 ### Why the percentile is low
-The solution is slower than optimal because it uses O(N) checks per placement instead of O(1). The fastest solutions use boolean arrays for columns and diagonals, eliminating the inner loops. Additionally, the broken diagonal checks might cause unnecessary backtracking or even errors, though the tests passed.
+The code is fundamentally incorrect and would fail most test cases. Correct solutions use efficient validation and proper backtracking to explore all possibilities. This implementation misses solutions due to broken checks and premature termination.
