@@ -34,7 +34,7 @@ bool check(int n,vector<string>&curr,int i,int j){
     
    return true;
 }
-bool Nqueens(int i, vector<vector<string>>ans,vector<string>&curr,int n){
+bool Nqueens(int i, vector<vector<string>>&ans,vector<string>curr,int n){
     if(i==n){
         ans.push_back(curr);
         return true;
@@ -50,9 +50,7 @@ bool Nqueens(int i, vector<vector<string>>ans,vector<string>&curr,int n){
                 next1=true;
              }
              curr[i][j]='.';
-             if(!next){
-                return false;
-             }
+             
         }
     }
 
