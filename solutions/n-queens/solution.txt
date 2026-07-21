@@ -43,7 +43,7 @@ bool Nqueens(int i, vector<vector<string>>&ans,vector<string>&curr,int n){
         if(check(n,curr,i,j)){
              curr[i][j]='Q';
              bool next=Nqueens(i+1,ans,curr,n);
-             curr[i][j]='.'
+             curr[i][j]='.';
              if(!next){
                 return false;
              }
