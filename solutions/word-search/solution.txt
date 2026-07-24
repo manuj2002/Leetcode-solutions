@@ -24,29 +24,29 @@ public:
                 return true;
             }
 
-            ans=search(borad,i-1,j,k,word);
+            ans=search(board,i-1,j,k,word);
             if(ans){
                 board[i][j]=val;
                 return true;
             }
 
-            ans=search(borad,i,j+1,k,word);
+            ans=search(board,i,j+1,k,word);
             if(ans){
                 board[i][j]=val;
                 return true;
             }
 
-            ans=search(borad,i,j-1,k,word);
+            ans=search(board,i,j-1,k,word);
             if(ans){
                 board[i][j]=val;
                 return true;
             }
              board[i][j]=val;
-            return ans
+            return ans;
          }
 
          if(k==0){
-           ans=search(borad,i+1,j,k,word);
+           ans=search(board,i+1,j,k,word);
             if(ans){
                 board[i][j]=val;
                 return true;
@@ -54,35 +54,35 @@ public:
 
          }
 
-         ans=search(borad,i+1,j,k+1,word);
+         ans=search(board,i+1,j,k+1,word);
             if(ans){
                 board[i][j]=val;
                 return true;
             }
 
-            ans=search(borad,i-1,j,k+1,word);
+            ans=search(board,i-1,j,k+1,word);
             if(ans){
                 board[i][j]=val;
                 return true;
             }
 
-            ans=search(borad,i,j+1,k,word);
+            ans=search(board,i,j+1,k,word);
             if(ans){
                 board[i][j]=val;
                 return true;
             }
 
-            ans=search(borad,i,j-1,k+1,word);
+            ans=search(board,i,j-1,k+1,word);
             if(ans){
                 board[i][j]=val;
                 return true;
             }
              board[i][j]=val;
-            return ans
+            return ans;
 
          
     }
     bool exist(vector<vector<char>>& board, string word) {
-        search(borad,0,0,0,word);
+        search(board,0,0,0,word);
     }
 };
