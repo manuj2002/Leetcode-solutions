@@ -13,12 +13,12 @@ public:
        return false;
 
         char val=board[i][j];
-        board[i][j]='0'
+        board[i][j]='0';
 
         int ans=false;
         
          if (board[i][j]!=word[k]){
-            ans=search(borad,i+1,j,k,word);
+            ans=search(board,i+1,j,k,word);
             if(ans){
                 board[i][j]=val;
                 return true;
