@@ -10,20 +10,45 @@ date: 2026-07-24
 # Analysis
 
 ### Verdict summary
-Your approach attempts backtracking with DFS but is fundamentally broken due to a typo (`borad` vs `board`) and multiple logic errors. The correct solution should start from every cell and recursively explore neighbors using careful backtracking; you are not correctly implementing that flow.
+The approach uses DFS backtracking but has critical logical errors and missing return statements. The core idea is correct (DFS with pruning via marking visited cells), but the implementation is flawed and does not compile.
 
 ### Complexity
-If the code compiled, it would be **O(m * n * 4^L)** time in worst-case where L is word length, because it explores up to 4 directions without early pruning for mismatched characters. Space complexity would be **O(L)** for recursion depth, plus O(1) extra aside from marking visited cells in-place.
+**Time**: Without fixes, worst-case O(4^L * M*N) where L is word length, M and N are board dimensions. However, the current code has incorrect pruning and early termination logic.  
+**Space**: O(L) for recursion depth, but O(M*N) if considering the modified board (though it's restored after each path).
 
 ### vs. optimal
-The optimal solution is also backtracking + DFS but is properly structured:  
-1. Loop through all starting cells `(i, j)`.  
-2. In DFS, first check bounds, visited status, and character match at current `board[i][j]` vs `word[k]`.  
-3. If match and `k == L-1`, return true; else mark visited, recurse four directions with `k+1`, unmark, return success if any direction works.  
-This has the same time complexity in worst case, but early mismatching and bounds checks prune branches immediately—your code fails to check character match before recursing in some branches, causing wasted exploration.
+The optimal approach is DFS backtracking with pruning by checking character matches before recursing. The current code attempts this but has severe issues:
+1. It does not check if the current cell matches `word[k]` before exploring neighbors (except in a misplaced condition).
+2. The logic for handling the first character (k=0) is fragmented and incorrect.
+3. It misses the fundamental step: only recurse if the current cell matches the current character.
 
 ### Improvements
-1. **Fix typo and compilation errors:** Change `borad` to `board` on every occurrence; add missing semicolons after `return ans` in two places.
-2. **Restructure DFS:** Your conditional `if(board[i][j]!=word[k])` is misplaced—that check belongs at the start before exploring neighbors (and when false, you should not explore). After marking, you should only propagate `k+1` if current character matches `word[k]`.
-3. **Starting position logic:** In `exist`, you must iterate over all `(i,j)` and call `search` from each—currently you only call `search(board,0,0,0,word)`.
-4. **Remove redundant code:** The branch `if(k==0)` is unnecessary, and your neighbor recursions sometimes pass `k` (not `k+1`) incorrectly; standard DFS increments `k` only after matching current cell.
+1. **Missing return in `exist`**: The function `exist` does not return the result of `search` (line 87). Add `return search(board,0,0,0,word);`.
+2. **Incorrect condition structure**: The condition `if (board[i][j]!=word[k])` is misplaced. Instead, check at the start: if current cell doesn't match `word[k]`, return false. Also, mark the cell only after matching.
+3. **Fix DFS logic**: The recursion should only proceed if the current character matches. The correct structure:
+   - Check boundaries and visited.
+   - If current char != word[k], return false.
+   - If k == word.size()-1, return true.
+   - Mark cell as visited.
+   - Recurse in 4 directions with k+1.
+   - Unmark cell and return if any path succeeded.
+4. **Redundant recursions**: The code recurses with same `k` in some branches (e.g., line 50: `search(..., k, word)`), which is incorrect. Always increment `k` after matching.
+5. **Inefficient pruning**: The current code does not prune early when the current character doesn't match. Move the match check to the top.
+
+Revised core function:
+```cpp
+bool search(vector<vector<char>>& board, int i, int j, int k, string& word) {
+    if (k == word.size()) return true;
+    if (i < 0 || j < 0 || i >= board.size() || j >= board[0].size() || board[i][j] != word[k]) 
+        return false;
+    char tmp = board[i][j];
+    board[i][j] = '0';
+    bool found = search(board, i+1, j, k+1, word) ||
+                 search(board, i-1, j, k+1, word) ||
+                 search(board, i, j+1, k+1, word) ||
+                 search(board, i, j-1, k+1, word);
+    board[i][j] = tmp;
+    return found;
+}
+```
+And in `exist`, iterate over all starting cells.
