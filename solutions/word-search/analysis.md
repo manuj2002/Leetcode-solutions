@@ -3,28 +3,32 @@ problem: "Word Search"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 9 MB
+memory: 8.6 MB
 date: 2026-07-24
 ---
 
 # Analysis
 
 ### Verdict summary
-The submission attempts a DFS with backtracking approach, which is correct for this problem. However, the implementation contains a critical bug in the recursion logic and index handling, making the solution incorrect despite being "accepted" (likely due to weak test cases). The function `search` is called with `(0,0,0)` regardless of the current cell `(i,j)` in the outer loops, so it only explores from the top-left corner repeatedly.
+This solution uses DFS with backtracking to search for the word in the grid, which is the correct approach for this problem. The implementation correctly marks visited cells and backtracks, but has some inefficiencies in control flow.
 
 ### Complexity
-**Time Complexity**: Intended to be O(m * n * 4^L) where L is the length of `word`, but due to the bug, it only searches from (0,0) repeatedly, so worst-case is O(m * n * 4^L) but effectively only one starting point is used.  
-**Space Complexity**: O(L) due to recursion depth (worst-case L), which is optimal for DFS.
+**Time Complexity**: O(m*n*4^L) where m and n are grid dimensions and L is word length. In worst case, DFS explores 4 directions at each step up to L depth.
+**Space Complexity**: O(L) for recursion stack depth (no additional space beyond the modified board for marking visited cells).
 
 ### vs. optimal
-The optimal approach is DFS + backtracking from every cell, with pruning (e.g., checking if the current board character matches the current word character before recursing). This solution has the right idea but fails to iterate over all starting points correctly. The known optimal time is O(m * n * 4^L), which is efficient given the constraints (small grid and word length).
+This is the optimal approach for this problem. The solution correctly prunes branches when the current character doesn't match (early termination) and uses backtracking to avoid extra memory allocation for visited tracking.
 
 ### Improvements
-1. **Critical Bug Fix**: In `exist`, the inner loops should call `search(board, i, j, 0, word)` instead of `search(board, 0, 0, 0, word)`. Currently, it only starts from (0,0) for every (i,j), which is incorrect.
-2. **Pruning Logic**: The condition `if(board[i][j]==word[k]) return false;` is reversed. It should return false if they are NOT equal. Replace with `if(board[i][j] != word[k]) return false;`.
-3. **Redundant Checks**: The DFS checks all four directions unconditionally. Instead, check if the current cell matches `word[k]` first, then mark and recurse.
-4. **Code Cleanup**: Use a loop for directions (dx,dy arrays) to avoid repetitive code for each neighbor.
-5. **Early Termination**: Return true immediately when k==word.size(), which is correct.
+1. **Early return optimization**: Instead of checking each direction sequentially and immediately returning if found, use logical ORs to chain the recursive calls, which is more concise and avoids repeated conditional checks:
+```cpp
+bool ans = search(board, i+1, j, k+1, word) ||
+           search(board, i-1, j, k+1, word) ||
+           search(board, i, j+1, k+1, word) ||
+           search(board, i, j-1, k+1, word);
+```
+2. **Parameter passing**: Pass `word` by const reference to avoid copying: `bool search(..., const string& word)`
+3. **Boundary check order**: Check the visited status ('0') before boundary checks to avoid unnecessary boundary checks for already-visited cells.
 
 ### Why the percentile is low
-The solution has a severe bug (only searching from (0,0)) that causes it to fail on many test cases (e.g., if the word starts from another cell). However, if the test cases are weak and the word happens to start at (0,0), it might pass. Faster solutions correctly iterate over all starting points, use efficient pruning (return early if no match), and use direction loops for cleaner and more efficient recursion.
+Despite being theoretically optimal, the implementation has minor inefficiencies: sequential direction checks with immediate returns create more function call overhead compared to using logical ORs, which allows better branch prediction and potential short-circuiting. The solution also copies the `word` string repeatedly instead of using const reference.
