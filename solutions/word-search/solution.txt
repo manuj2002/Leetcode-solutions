@@ -17,7 +17,7 @@ public:
 
         int ans=false;
         
-         if (board[i][j]!=word[k]){
+         if (val!=word[k]){
             ans=search(board,i+1,j,k,word);
             if(ans){
                 board[i][j]=val;
