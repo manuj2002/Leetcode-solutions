@@ -52,6 +52,24 @@ public:
                 return true;
             }
 
+            ans=search(board,i,j+1,k,word);
+            if(ans){
+                board[i][j]=val;
+                return true;
+            }
+
+            ans=search(board,i,j-1,k,word);
+            if(ans){
+                board[i][j]=val;
+                return true;
+            }
+
+            ans=search(board,i-1,j,k,word);
+            if(ans){
+                board[i][j]=val;
+                return true;
+            }
+
          }
 
          ans=search(board,i+1,j,k+1,word);
@@ -83,6 +101,6 @@ public:
          
     }
     bool exist(vector<vector<char>>& board, string word) {
-        search(board,0,0,0,word);
+        return search(board,0,0,0,word);
     }
 };
