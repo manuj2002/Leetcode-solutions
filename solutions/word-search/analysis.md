@@ -3,27 +3,27 @@ problem: "Word Search"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 9.7 MB
+memory: 9.6 MB
 date: 2026-07-24
 ---
 
 # Analysis
 
 ### Verdict summary
-The code attempts a DFS backtracking approach but contains critical logic errors in handling the search state and base cases. The implementation incorrectly checks the current cell's value against the target character only after marking it visited, leading to incorrect pruning and missed paths.
+The code uses a DFS with backtracking approach, which is correct for this problem. However, the implementation is convoluted with redundant logic and incorrect recursive calls that render the solution inefficient and potentially incorrect for many cases.
 
 ### Complexity
-**Time**: Worst-case O(m*n*4^L) where L is the word length, but the implementation has redundant calls due to flawed logic.  
-**Space**: O(L) due to recursion depth, but O(m*n) worst-case if considering recursion stack (though L ≤ 15).
+**Time**: In the worst case, O(4^L * m * n) where L is the length of the word, but the implementation might prune poorly.
+**Space**: O(L) for recursion depth, plus O(1) extra space aside from the recursion stack.
 
 ### vs. optimal
-The optimal approach uses DFS backtracking with pruning: for each starting cell, recursively explore all 4 directions, backtracking by unmarking visited cells. This code has the same theoretical complexity but fails to correctly implement the search logic. The known optimal solution checks the current cell's value *before* marking it visited and only proceeds if it matches the current character in the word.
+The optimal approach uses the same DFS backtracking but with clean, efficient pruning. This code differs by having redundant condition checks and incorrect recursive calls (e.g., `k` not incremented in some branches), which break the logic and cause unnecessary computations.
 
 ### Improvements
-1. **Incorrect base case handling**: The code checks `board[i][j] != word[k]` *after* marking the cell as visited ('0'), which is backwards. The correct approach is to check if the current cell matches `word[k]` *before* marking it.
-2. **Redundant recursion calls**: The code makes unnecessary recursive calls when `k==0` and when the current cell doesn't match, leading to duplicated and incorrect search paths.
-3. **Inefficient backtracking**: The code attempts to backtrack immediately after any recursive call returns true, but the logic is convoluted and error-prone. The standard pattern is to explore all directions and return true if any succeed.
-4. **Missing early termination**: The code does not prune when the current cell doesn't match `word[k]`, leading to wasted searches.
+1. **Incorrect recursive calls**: In the branch where `val == word[k]`, the code should increment `k` for all subsequent searches. However, several calls (e.g., `search(board,i,j+1,k,word)`) use the same `k`, which is wrong.
+2. **Redundant logic**: The `k==0` branch duplicates the search logic and is unnecessary. The main search should handle all cases uniformly.
+3. **Early termination**: The code should return as soon as one path succeeds, but the current structure has multiple nested conditionals that obscure this.
+4. **Pruning**: The code misses the basic pruning step: if the current character doesn't match `word[k]`, return immediately without exploring further.
 
 ### Why the percentile is low
-Faster solutions correctly implement DFS: they first validate the current cell matches `word[k]`, then mark it visited, recurse to all neighbors for `k+1`, unmark, and return the result. This avoids redundant calls and ensures correct pruning. The submitted code's flawed logic causes it to miss valid paths and make unnecessary searches, reducing efficiency despite the same asymptotic complexity.
+Faster solutions use a cleaner DFS implementation: they check boundaries and visited status first, then check character match, and only then recurse with `k+1`. They also use a direction array for concise neighbor iteration. This code's redundant checks and incorrect recursion depth handling cause it to explore many invalid paths, leading to higher constant factors and potential errors.
