@@ -10,34 +10,20 @@ date: 2026-07-24
 # Analysis
 
 ### Verdict summary
-The approach attempts a backtracking DFS but is fundamentally flawed due to logical errors and incorrect implementation. The core idea of DFS with pruning is correct for this problem, but the code does not properly compare characters, handle the starting point, or explore all paths correctly.
+Your approach attempts backtracking with DFS but is fundamentally broken due to a typo (`borad` vs `board`) and multiple logic errors. The correct solution should start from every cell and recursively explore neighbors using careful backtracking; you are not correctly implementing that flow.
 
 ### Complexity
-This code would have exponential time complexity O(4^L * M * N) where L is the word length, M and N are board dimensions, but it contains critical bugs that prevent it from functioning. Space complexity would be O(L) for recursion depth if implemented correctly.
+If the code compiled, it would be **O(m * n * 4^L)** time in worst-case where L is word length, because it explores up to 4 directions without early pruning for mismatched characters. Space complexity would be **O(L)** for recursion depth, plus O(1) extra aside from marking visited cells in-place.
 
 ### vs. optimal
-The optimal approach uses DFS backtracking: start DFS from every cell, marking visited cells, recursively exploring neighbors while matching word characters, then backtracking. Key differences:
-1. Current code incorrectly handles the starting condition (k==0 separately)
-2. Fails to properly check if current cell matches word[k] before exploring
-3. Incorrectly passes k instead of k+1 in some DFS calls
-4. Misses the fundamental pattern of "if match, then explore neighbors; else return false"
+The optimal solution is also backtracking + DFS but is properly structured:  
+1. Loop through all starting cells `(i, j)`.  
+2. In DFS, first check bounds, visited status, and character match at current `board[i][j]` vs `word[k]`.  
+3. If match and `k == L-1`, return true; else mark visited, recurse four directions with `k+1`, unmark, return success if any direction works.  
+This has the same time complexity in worst case, but early mismatching and bounds checks prune branches immediately—your code fails to check character match before recursing in some branches, causing wasted exploration.
 
 ### Improvements
-1. Fix syntax errors: Line 16 missing semicolon after `board[i][j]='0'`, line 54 missing semicolon after `return ans`, and multiple typos (`borad` vs `board`).
-
-2. Simplify the logic flow: The current branching structure is confused. The correct pattern should be:
-```cpp
-if(board[i][j] != word[k]) return false;
-if(k == word.size()-1) return true;
-// Mark visited
-// Explore 4 directions with k+1
-// Unmark and return result
-```
-
-3. Remove redundant code: The separate handling for k==0 is unnecessary since the starting point should be handled by the main logic.
-
-4. Fix neighbor exploration: All four directions should be explored with k+1 (not k) after a successful character match. The current code inconsistently mixes k and k+1 parameters.
-
-5. Implement proper backtracking: The current code attempts to restore the board state in multiple places but does so incorrectly. The restoration should happen after all recursive calls complete.
-
-6. The main function should iterate over all starting positions (i,j) rather than only starting at (0,0).
+1. **Fix typo and compilation errors:** Change `borad` to `board` on every occurrence; add missing semicolons after `return ans` in two places.
+2. **Restructure DFS:** Your conditional `if(board[i][j]!=word[k])` is misplaced—that check belongs at the start before exploring neighbors (and when false, you should not explore). After marking, you should only propagate `k+1` if current character matches `word[k]`.
+3. **Starting position logic:** In `exist`, you must iterate over all `(i,j)` and call `search` from each—currently you only call `search(board,0,0,0,word)`.
+4. **Remove redundant code:** The branch `if(k==0)` is unnecessary, and your neighbor recursions sometimes pass `k` (not `k+1`) incorrectly; standard DFS increments `k` only after matching current cell.
