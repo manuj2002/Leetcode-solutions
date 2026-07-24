@@ -13,12 +13,15 @@ public:
        return false;
 
         char val=board[i][j];
-        board[i][j]='0';
+        if(board[i][j]==word[k])
+          return false;
+
+          board[i][j]='0';
 
         int ans=false;
         
-         if (val!=word[k]){
-            ans=search(board,i+1,j,k,word);
+    
+         ans=search(board,i+1,j,k,word);
             if(ans){
                 board[i][j]=val;
                 return true;
@@ -43,64 +46,20 @@ public:
             }
              board[i][j]=val;
             return ans;
-         }
-
-         if(k==0){
-           ans=search(board,i+1,j,k,word);
-            if(ans){
-                board[i][j]=val;
-                return true;
-            }
-
-            ans=search(board,i,j+1,k,word);
-            if(ans){
-                board[i][j]=val;
-                return true;
-            }
-
-            ans=search(board,i,j-1,k,word);
-            if(ans){
-                board[i][j]=val;
-                return true;
-            }
-
-            ans=search(board,i-1,j,k,word);
-            if(ans){
-                board[i][j]=val;
-                return true;
-            }
-
-         }
-
-         ans=search(board,i+1,j,k+1,word);
-            if(ans){
-                board[i][j]=val;
-                return true;
-            }
-
-            ans=search(board,i-1,j,k+1,word);
-            if(ans){
-                board[i][j]=val;
-                return true;
-            }
-
-            ans=search(board,i,j+1,k,word);
-            if(ans){
-                board[i][j]=val;
-                return true;
-            }
-
-            ans=search(board,i,j-1,k+1,word);
-            if(ans){
-                board[i][j]=val;
-                return true;
-            }
-             board[i][j]=val;
-            return ans;
+         
 
          
     }
     bool exist(vector<vector<char>>& board, string word) {
-        return search(board,0,0,0,word);
+       int ans=false;
+       for(int i=0;i<board.size();i++){
+        for(int j=0;j<board[0].size();j++){
+            ans=search(board,0,0,0,word);
+            if(ans){
+                return true;
+            }
+        }
+       }
+       return false;
     }
 };
