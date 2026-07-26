@@ -1,31 +1,34 @@
 ---
 problem: "Asteroid Collision"
 difficulty: unknown
-verdict: Accepted
-runtime: 0 ms
-memory: 8.4 MB
+verdict: Runtime Error
+runtime: N/A
+memory: N/A
 date: 2026-07-26
 ---
 
 # Analysis
 
 ### Verdict summary
-The solution correctly uses a stack to simulate collisions between moving asteroids. The approach handles right-moving (positive) and left-moving (negative) collisions efficiently and is the standard optimal method.  
+The submission attempts a stack-based simulation but contains a critical bug in handling collisions. The approach is directionally correct but fails due to accessing a popped stack element incorrectly after a same-size collision.
 
 ### Complexity
-**Time:** O(n). Each asteroid is pushed onto the stack at most once and popped at most once.  
-**Space:** O(n). Stack usage can grow up to the size of the input.  
+- **Time complexity:** O(n) — each asteroid is pushed once and popped at most once.
+- **Space complexity:** O(n) — worst-case stack usage when no collisions occur.
 
-### vs. optimal  
-This **is** the known optimal approach for this problem. The typical solution uses a stack and processes each asteroid once, with potential collisions handled in the stack loop—exactly as done here.  
+### vs. optimal
+The optimal solution uses a stack to simulate collisions efficiently. This submission implements the correct core logic but has a logic error: after popping the top asteroid when `abs(e) >= s.top()`, it incorrectly checks `s.top()` again after popping, leading to undefined behavior (accessing an empty stack or wrong value). The correct approach should compare sizes and handle same-size collisions without re-accessing the popped element.
 
-### Improvements  
-1. **Handling the case when `abs(e) == s.top()`:** Currently `incomingBroke=true` and the top is kept, but the top should be popped and neither asteroid retained. Code should be changed to `if(abs(e) > s.top()) s.pop(); else if(abs(e) == s.top()) { s.pop(); incomingBroke = true; break; }` to correctly destroy both.
-2. **Unnecessary `incomingBroke` variable:** Simplify by using explicit break/pop logic without a separate boolean flag by comparing magnitudes inside the loop.
-3. **Build answer in reverse directly:** Avoid separate reversal by using a vector as the stack itself, then returning it.  
-
-### Why the percentile is low  
-Runtime percentiles are often influenced by small constant factors. Faster solutions may:  
-- Use an in-place vector as the stack, avoiding separate `stack<int>` and reducing memory allocations.  
-- Process equality case more efficiently without extra flags.  
-- Iterate from front to back and build result directly without reversal (using vector's `push_back` and `pop_back` as stack ops).
+### Improvements
+1. **Fix collision logic:** After `s.pop()`, do not access `s.top()` again in the same condition. Instead, compare `abs(e)` with the popped value directly:
+   ```cpp
+   int top = s.top();
+   s.pop();
+   if (abs(e) == top) {
+       incomingBroke = true;
+       break;
+   }
+   ```
+2. **Remove redundant condition:** The `else` block and `incomingBroke` flag can be simplified by breaking only when the incoming asteroid is destroyed. If the top asteroid is destroyed, continue the loop to check against the next stack element.
+3. **Use a while-loop break conditionally:** The loop should break only when the incoming asteroid is destroyed. Otherwise, it should continue checking collisions with the remaining asteroids in the stack.
+4. **Directly build the result vector:** Instead of reversing the stack at the end, use a deque or insert at the beginning to avoid the O(n) reversal step (though this is minor).
