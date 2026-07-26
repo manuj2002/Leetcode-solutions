@@ -13,7 +13,7 @@ public:
         }
 
         while(!s.empty()){
-            ans=max(ans,s.top().first*(n-s.top().second)); 
+            ans=max(ans,s.top().first*(n-0)); 
             s.pop();
         }
 
