@@ -1,42 +1,28 @@
 ---
 problem: "House Robber"
 difficulty: unknown
-verdict: Runtime Error
-runtime: N/A
-memory: N/A
+verdict: Accepted
+runtime: 0 ms
+memory: 8.1 MB
 date: 2026-07-26
 ---
 
 # Analysis
 
 ### Verdict summary
-The submission attempts a dynamic programming approach but contains a critical out-of-bounds access error for small inputs. The core idea of storing subproblem solutions is correct, but the implementation fails to handle the base case where the input has only one house, causing a buffer overflow.
+This solution uses dynamic programming with an O(n^2) inner loop, which is inefficient for the problem constraints. While it correctly computes the maximum amount by considering non-adjacent houses, the approach is suboptimal compared to the standard O(n) DP solution.
 
 ### Complexity
-- **Time complexity**: O(n²) due to the nested loop where for each house `i`, it scans all houses from `i-2` down to `0`.
-- **Space complexity**: O(n) for the `dp` array.
+**Time:** O(n^2) due to the nested loop structure.  
+**Space:** O(n) for the DP array.
 
 ### vs. optimal
-The optimal solution uses O(n) time and O(1) space with two variables tracking the maximum profit up to the previous two houses. This submission differs by:
-1. Using unnecessary O(n) space when O(1) suffices.
-2. Implementing an O(n²) recurrence instead of the standard O(n) DP transition `dp[i] = max(dp[i-1], dp[i-2] + nums[i])`.
+The optimal approach uses O(n) time and O(1) space with two variables tracking the maximum profit up to the previous two houses. This solution differs by using an O(n) DP array and an unnecessary inner loop to find the maximum value from indices i-2 down to 0, which is redundant since the DP array already accumulates the maximum values.
 
 ### Improvements
-1. **Fix buffer overflow**: The code assumes `nums.size() >= 2` by accessing `dp[1]`. Add a check:  
-   ```cpp
-   if (n == 1) return nums[0];
-   ```
-2. **Optimize DP recurrence**: Replace the O(n²) inner loop with O(1) transitions:  
-   ```cpp
-   dp[i] = max(dp[i-1], dp[i-2] + nums[i]);
-   ```
-3. **Reduce space to O(1)**: Use two variables instead of a full `dp` array:
-   ```cpp
-   int prev2 = 0, prev1 = nums[0];
-   for (int i = 1; i < n; i++) {
-       int curr = max(prev1, prev2 + nums[i]);
-       prev2 = prev1;
-       prev1 = curr;
-   }
-   return prev1;
-   ```
+1. Replace the O(n^2) inner loop with a single pass that maintains the maximum value up to i-2. The inner loop is redundant and inefficient.
+2. Use two variables (e.g., `prev` and `curr`) to store state instead of a full DP array, reducing space to O(1).
+3. Handle edge cases (e.g., n=1) explicitly, as the current code assumes n>=2 (accessing dp[1] without checks).
+
+### Why the percentile is low
+The faster solutions use a linear pass with constant space, updating two variables: `rob` (current house robbed) and `notRob` (current house not robbed). They avoid the inner loop by tracking the maximum profit incrementally, achieving O(n) time and O(1) space. This solution's quadratic inner loop causes unnecessary overhead, especially for n up to 100.
