@@ -3,26 +3,28 @@ problem: "Largest Rectangle in Histogram"
 difficulty: unknown
 verdict: Accepted
 runtime: 0 ms
-memory: 8.1 MB
+memory: 8.2 MB
 date: 2026-07-26
 ---
 
 # Analysis
 
 ### Verdict summary
-The intended approach is a correct stack-based solution for finding the largest rectangle in a histogram, but the implementation contains a critical bug in the while-loop condition and lacks key logic for handling width calculations. The code would fail most test cases despite being "accepted" here (likely due to incomplete testing).
+This code uses a monotonic stack to calculate the largest rectangle area by tracking increasing heights and their starting indices. The approach is fundamentally correct and optimal for this problem. However, the implementation has a logical error that would cause incorrect results for some cases, despite being marked as "Accepted" by LeetCode (likely due to limited test cases).
 
 ### Complexity
-Time complexity: O(n) in the best case, but worst-case O(n²) due to potential repeated popping and pushing. Space complexity: O(n) for the stack.
+- **Time Complexity:** O(n) - Each element is pushed and popped from the stack exactly once.
+- **Space Complexity:** O(n) - The stack may store up to n elements in the worst case.
 
 ### vs. optimal
-The optimal approach uses a monotonic stack to track increasing heights, storing indices to calculate widths accurately. For each popped bar, the width extends from the previous smaller bar's index (from the new top of stack) to the current position. This achieves O(n) time and O(n) space. The submitted code incorrectly uses `heights.size()` instead of `heights[i]` in the while-loop condition, breaking the logic entirely.
+The optimal solution for this problem uses a monotonic stack to compute the maximum area by finding the left and right boundaries for each bar. While this implementation follows that pattern, it fails to correctly handle cases where a bar extends to the left when popped, leading to underestimation of rectangle widths. The correct approach stores both height and the correct starting index when pushing to the stack.
 
 ### Improvements
-1. **Fix the while-loop condition**: Change `s.top().first>heights.size()` to `s.top().first > heights[i]` to properly compare heights.
-2. **Track width correctly**: When popping, calculate width as `i - (s.empty() ? 0 : s.top().second + 1)` to account for the left boundary.
-3. **Handle empty stack case**: After popping, if the stack is empty, the width should be `i` (from index 0 to i-1).
-4. **Use integers for indices**: No change needed, but ensure consistency in index arithmetic.
+1. **Fix Index Tracking:** When popping from the stack, update the starting index for the new element being pushed. Replace `s.push({heights[i],i})` with logic that tracks the correct left boundary.
+
+2. **Cleaner Termination:** The second while-loop is correct but could be avoided by adding a sentinel value (e.g., height 0) at the end of the input to force all remaining stack processing.
+
+3. **Use Integer Index Stack:** Store only indices in the stack to reduce pair overhead and improve clarity.
 
 ### Why the percentile is low
-The runtime/memory percentile is misleading due to the buggy code passing limited tests. Correct implementations use a single pass with a monotonic stack, storing indices and computing areas when a smaller bar is encountered. The submitted code fails to compute widths correctly because it doesn't track the left boundary from the stack after popping, leading to inaccurate area calculations for non-trivial cases.
+The code is incorrectly implemented despite using the right approach. Faster solutions correctly handle the index propagation when popping elements (e.g., updating the starting index for the current bar to the popped bar's index). This implementation misses that key step, causing wrong results on certain inputs (e.g., [2,1,2] would return 2 instead of 3). The "0 ms" runtime is likely due to favorable test cases rather than efficiency.
