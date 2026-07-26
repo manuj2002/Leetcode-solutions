@@ -5,8 +5,13 @@ public:
         for(auto e:asteroids){
             int incomingBroke=false;
             while(!s.empty() && s.top()>0 && e<0){
-                if(abs(e)>s.top()){
+                if(abs(e)>=s.top()){
                     s.pop();
+                    if(abs(e)==s.top()){
+                       incomingBroke=true;
+                    break; 
+                    }
+                    
                 }else{
                     incomingBroke=true;
                     break;
