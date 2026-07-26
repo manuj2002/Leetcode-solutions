@@ -1,27 +1,25 @@
 ---
 problem: "Maximum Product of Three Numbers"
 difficulty: unknown
-verdict: Accepted
-runtime: 0 ms
-memory: 8.2 MB
+verdict: Wrong Answer
+runtime: N/A
+memory: N/A
 date: 2026-07-26
 ---
 
 # Analysis
 
-### Verdict summary
-The submission uses sorting to find the three largest numbers and returns their product. While this works for many cases, it fails to consider negative numbers that could yield a larger product when multiplied with positive numbers.
+### Verdict summary  
+The submission sorts the array and multiplies the three largest elements. This is a logical approach for positive numbers but fails because it does not consider the possibility that two large negative numbers could yield a large positive product when multiplied with the largest positive number.
 
-### Complexity
-Time: O(n log n) due to the sorting operation. Space: O(1) if the sort is in-place (as it is here), but note that the algorithm may use O(log n) stack space for the sort.
+### Complexity  
+**Time complexity:** O(n log n) due to sorting.  
+**Space complexity:** O(log n) for the sorting algorithm's recursion stack (or O(1) if using an iterative sort, but the standard sort is typically O(log n) due to recursion).
 
-### vs. optimal
-The optimal approach for this problem is to find the two smallest and three largest numbers in a single pass without sorting. The maximum product is either the product of the three largest numbers or the product of the two smallest (which could be negative) and the largest (if they yield a positive product). The optimal solution runs in O(n) time and O(1) space.
+### vs. optimal  
+The optimal approach recognizes that the maximum product of three numbers must be either the product of the three largest numbers or the product of the two smallest (most negative) numbers and the largest number. The optimal solution can be implemented in O(n) time by scanning the array once to find the three largest and two smallest values without fully sorting it. The submission fails to handle cases with negative numbers because it only considers the three largest elements.
 
-### Improvements
-1. Replace the O(n log n) sort with a linear scan to track the two smallest and three largest values.
-2. Instead of sorting the entire array, which is unnecessary, maintain variables for min1, min2, max1, max2, max3.
-3. The current solution fails for cases with negative numbers (e.g., [-10, -10, 1, 2] should return 200, but this code returns 2).
-
-### Why the percentile is low
-The percentile is low because the solution uses sorting, which is asymptotically slower than the optimal linear approach. Faster solutions avoid sorting and instead scan the array once, updating the necessary min and max values, which is O(n) and more efficient for large inputs.
+### Improvements  
+1. **Fix logic for negative numbers:** Instead of returning only `nums[n-1]*nums[n-2]*nums[n-3]`, compare it with `nums[0]*nums[1]*nums[n-1]` to account for negative numbers.  
+2. **Avoid full sort:** Use a single pass to track the top three largest and two smallest values, reducing time complexity to O(n) and space complexity to O(1).  
+3. **Use constants for clarity:** Replace magic numbers (like 3) with named constants or comments to explain the choices.
