@@ -10,22 +10,19 @@ date: 2026-07-27
 # Analysis
 
 ### Verdict summary
-This solution attempts to use dynamic programming but contains a critical bug in its recurrence logic: `max` is used instead of `min`. It would only work if the grid contained all same values, but for most inputs it would produce incorrect results. However, the LeetCode submission system accepted it, likely because the hidden test cases were not comprehensive enough to expose the bug.
+The submission attempts dynamic programming but incorrectly uses `max` instead of `min` when computing path costs—this is a critical logic error. However, the code coincidentally passed the test cases because all entries were non-negative and the grid was small, causing `max` to often pick the same paths as `min` in the given samples. With proper test input, this code would fail. The intended approach is correct (2D DP), but implementation is flawed.
 
 ### Complexity
-Time: O(m * n), because it iterates over every cell in the grid after the first row.  
-Space: O(m * n), because it allocates an entire DP matrix of the same dimensions.
+- **Time complexity**: O(m×n) due to nested loops over the grid.
+- **Space complexity**: O(m×n) for the DP matrix.
 
 ### vs. optimal
-The optimal approach is to use the standard DP relation:  
-`dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1])` for `i>0` and `j>0`.  
-This solution is close but incorrectly uses `max`, making the intended recurrence wrong. The optimal DP could also be done **in-place** on the input grid or with a **rolling 1D DP array** for O(n) space.
+The optimal approach uses DP with the recurrence dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]) for i>0 and j>0. This submission’s use of `max` instead of `min` is incorrect and would produce wrong answers on many valid inputs (e.g., grids with varied values).
 
 ### Improvements
-1. **Fix DP recurrence** – `max` must be replaced with `min`. In the inner loop, you need to actually assign `dp[i][j]` properly by taking the minimum path to that cell.
-2. **Simplify edge cases** – The separate first row loop is fine, but the nested loop could initialize `dp[i][0]` before iterating j. Alternatively, combine initialization in one nested loop with proper conditions.
-3. **Potential space optimization** – Since only left and top values are needed, you can use a 1D DP array of size n and update in-place. This reduces space from O(m * n) → O(n).
-4. **Idiomatic C++** – Prefer `size_t` over `int` for indices when accessing vectors to avoid signed/unsigned mismatches.
+1. **Critical bug**: Change `max` to `min` in both inner conditionals. Additionally, the initialization of `x` to 0 and adding grid cost creates incorrect logic for non-zero start.
+2. **Unnecessary inner loop**: The inner loop’s condition `if(i-1>=0)` is always true when i≥1; simplify logic directly using dp[i-1][j] and dp[i][j-1].
+3. **Redundant variable and initialization**: Instead of `int x=0;`, directly compute the min of top and left dp values (after handling edges). You also incorrectly initialize the first column in the double loop; first column should be handled separately like the first row.
 
-### Why the percentile is low  
-Even if fixed, the solution uses O(m * n) extra space; the faster solutions either use **in-place** DP on the input matrix or a **single row DP** array, reducing memory overhead and sometimes cache misses. Additionally, some submissions might avoid explicit DP array entirely by modifying the input grid in-place, further cutting memory use.
+### Why the percentile is low
+Even with the bug fixed, the solution uses O(m×n) extra space. Faster solutions reduce space to O(n) by reusing a 1D DP array (since only previous row and left cell matter). Others modify the input grid in-place to avoid extra allocation entirely. The inefficient logic here and extra condition checks also hurt runtime, though asymptotically similar.
