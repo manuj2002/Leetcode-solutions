@@ -11,13 +11,13 @@ public:
 
     for(int i=1;i<n;i++){
         for(int j=0;j<m;j++){
-            int x=0;
+            int x=INT_MAX;
             if(i-1>=0){
-                x=max(x,dp[i-1][j]+grid[i][j]);
+                x=min(x,dp[i-1][j]+grid[i][j]);
             }
 
             if(j-1>=0){
-                x=max(x,dp[i][j-1]+grid[i][j]);
+                x=min(x,dp[i][j-1]+grid[i][j]);
             }
             dp[i][j]=x;
         }
