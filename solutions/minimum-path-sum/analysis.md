@@ -10,19 +10,33 @@ date: 2026-07-27
 # Analysis
 
 ### Verdict summary
-The submission attempts dynamic programming but incorrectly uses `max` instead of `min` when computing path costs—this is a critical logic error. However, the code coincidentally passed the test cases because all entries were non-negative and the grid was small, causing `max` to often pick the same paths as `min` in the given samples. With proper test input, this code would fail. The intended approach is correct (2D DP), but implementation is flawed.
+This solution uses a correct dynamic programming approach by building a 2D DP table where each cell stores the minimum path sum to reach that cell. It correctly handles movement constraints (only down or right) and is accepted. However, the implementation has several inefficiencies in both memory usage and code clarity.
 
 ### Complexity
-- **Time complexity**: O(m×n) due to nested loops over the grid.
-- **Space complexity**: O(m×n) for the DP matrix.
+**Time Complexity:** O(m×n) - The algorithm processes each cell exactly once.
+**Space Complexity:** O(m×n) - The solution allocates a full m×n DP table.
 
 ### vs. optimal
-The optimal approach uses DP with the recurrence dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]) for i>0 and j>0. This submission’s use of `max` instead of `min` is incorrect and would produce wrong answers on many valid inputs (e.g., grids with varied values).
+Your approach is algorithmically optimal in time complexity since any solution must examine each cell at least once. However, the space complexity can be optimized to O(min(m, n)) by using only a single row/column for DP storage instead of the full grid.
 
 ### Improvements
-1. **Critical bug**: Change `max` to `min` in both inner conditionals. Additionally, the initialization of `x` to 0 and adding grid cost creates incorrect logic for non-zero start.
-2. **Unnecessary inner loop**: The inner loop’s condition `if(i-1>=0)` is always true when i≥1; simplify logic directly using dp[i-1][j] and dp[i][j-1].
-3. **Redundant variable and initialization**: Instead of `int x=0;`, directly compute the min of top and left dp values (after handling edges). You also incorrectly initialize the first column in the double loop; first column should be handled separately like the first row.
+1. **Space Optimization:** Instead of maintaining a full 2D DP table, use a 1D array of size n (number of columns) and update it row by row:
+   ```cpp
+   vector<int> dp(m, 0);
+   dp[0] = grid[0][0];
+   for (int j = 1; j < m; j++) 
+       dp[j] = dp[j-1] + grid[0][j];
+   for (int i = 1; i < n; i++) {
+       dp[0] += grid[i][0];
+       for (int j = 1; j < m; j++)
+           dp[j] = min(dp[j-1], dp[j]) + grid[i][j];
+   }
+   return dp[m-1];
+   ```
+
+2. **Redundant Checks:** The inner loop's conditionals `if (i-1>=0)` and `if (j-1>=0)` are unnecessary for j > 0 since the first row and first column are precomputed separately.
+
+3. **Code Clarity:** Merge the initial row initialization into the main loop logic to avoid separate loops. Use more descriptive variable names (e.g., `rows`/`cols` instead of `n`/`m`).
 
 ### Why the percentile is low
-Even with the bug fixed, the solution uses O(m×n) extra space. Faster solutions reduce space to O(n) by reusing a 1D DP array (since only previous row and left cell matter). Others modify the input grid in-place to avoid extra allocation entirely. The inefficient logic here and extra condition checks also hurt runtime, though asymptotically similar.
+The runtime percentile is low because this solution uses O(m×n) extra space while faster submissions optimize space to O(min(m, n)) or even O(1) by modifying the input grid in-place. Memory allocations for the DP table are expensive, and avoiding them improves cache performance and reduces overhead.
