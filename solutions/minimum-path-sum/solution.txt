@@ -19,6 +19,7 @@ public:
             if(j-1>=0){
                 x=max(x,dp[i][j-1]+grid[i][j]);
             }
+            dp[i][j]=x;
         }
     }
 
