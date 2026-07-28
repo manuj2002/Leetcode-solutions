@@ -30,7 +30,7 @@ public:
             ans+=(c+'a');
         }
 
-        for(int i=0;i<26;i++){
+        for(int i=25;i>=0;i--){
             if(fre[i]==0)
               continue;
 
