@@ -1,7 +1,7 @@
 ---
 problem: "Smallest Palindromic Rearrangement I"
 difficulty: unknown
-verdict: Compile Error
+verdict: Runtime Error
 runtime: N/A
 memory: N/A
 date: 2026-07-28
@@ -11,30 +11,46 @@ date: 2026-07-28
 
 ### Verdict summary
 
-The submitted code attempts to rearrange characters to form the lexicographically smallest palindrome by counting frequencies and building the string in three parts: the left half, the middle character (if needed), and then reversing the left half to form the right. This is fundamentally the correct approach. However, the code has a major logical flaw in handling character frequencies and a critical bug with an uninitialized variable, causing a compile error and incorrect output.
+The submitted code attempts to use frequency counting to build the palindrome, but it contains critical flaws including an uninitialized variable and incorrect reconstruction logic. This leads to incorrect output and runtime errors.
 
 ### Complexity
 
-- **Time complexity:** O(n + 26) = O(n), where n is the length of the string (due to counting frequencies and building the string).
-- **Space complexity:** O(26) = O(1) for the frequency array, plus O(n) for the output string, totaling O(n).
+**Time complexity**: O(n) - The code makes several passes through the frequency array (constant size 26) and output string (length n).  
+**Space complexity**: O(n) - The output string storage dominates, plus the fixed-size frequency array.
 
 ### vs. optimal
 
-The optimal approach is to:
-1. Count the frequency of each character.
-2. Place the lexicographically smallest characters first in the left half.
-3. For odd-length palindromes, use one occurrence of the smallest character with an odd count as the middle.
+The optimal approach for this problem is frequency counting followed by lexicographic construction:
+1. Count character frequencies
+2. Place characters lex smallest first on both ends
+3. Handle the odd-count character (if any) in the middle
 
-This code correctly follows that strategy in concept. However, the implementation is flawed - it fails to reconstruct the full palindrome properly after building the left half, omitting the symmetric right half entirely. The optimal solution would correctly mirror the left half to complete the palindrome.
+The submitted code fails because:
+- Variable `c` is used uninitialized when there's no odd-frequency character
+- The reconstruction logic incorrectly handles the second half by appending characters after the middle instead of mirroring the first half
+- It modifies frequency counts in a way that loses information needed for proper reconstruction
 
 ### Improvements
 
-1. **Uninitialized variable:** The variable `c` is declared but not initialized. If no character has an odd count, `c` remains uninitialized, leading to undefined behavior. Initialize it to a null character (e.g., `char c = '\0';`).
+1. **Initialize critical variables**: `c` should be initialized to -1 and only set when an odd-count character is found.
 
-2. **Incorrect palindrome construction:** The code only builds the left half and appends the middle character, then appends the remaining characters from the frequency array directly. This produces a non-palindromic string. Instead, after building `ans` (the left half), the right half should be the reverse of `ans` (excluding the middle character if present).
+2. **Use proper palindrome construction**: Build the first half lex smallest, then mirror it for the second half:
+   ```cpp
+   string firstHalf = "";
+   char midChar = '\0';
+   
+   for(int i = 0; i < 26; i++) {
+       if(fre[i] % 2 == 1) {
+           midChar = 'a' + i;
+       }
+       firstHalf += string(fre[i] / 2, 'a' + i);
+   }
+   
+   string secondHalf = firstHalf;
+   reverse(secondHalf.begin(), secondHalf.end());
+   return firstHalf + (midChar ? string(1, midChar) : "") + secondHalf;
+   ```
 
-3. **Redundant frequency updates:** The frequency array is modified unnecessarily when calculating `n`. The counts should be used to determine how many times to add each character to the left half, but the array itself doesn't need to be updated since it's only used for counting.
+3. **Simplify frequency handling**: Don't modify the frequency array during the counting process - use the counts directly for construction.
 
-4. **Logic for odd counts:** The handling of odd counts is incomplete - it doesn't ensure that only one character gets the odd count in the middle. The code should first check if there's exactly one character with an odd frequency (required for palindrome formation) and handle it separately.
-
-5. **Inefficient string building:** Using `ans += char` in loops is inefficient for large strings due to repeated reallocations. Use `reserve()` to pre-allocate space or build the string more efficiently.
+4. **Use standard library**: `std::string` constructor with character repetition is more efficient than manual loops.
