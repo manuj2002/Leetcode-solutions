@@ -1,56 +1,39 @@
 ---
 problem: "Smallest Palindromic Rearrangement I"
 difficulty: unknown
-verdict: Runtime Error
-runtime: N/A
-memory: N/A
+verdict: Accepted
+runtime: 0 ms
+memory: 7.8 MB
 date: 2026-07-28
 ---
 
 # Analysis
 
 ### Verdict summary
-
-The submitted code attempts to use frequency counting to build the palindrome, but it contains critical flaws including an uninitialized variable and incorrect reconstruction logic. This leads to incorrect output and runtime errors.
+The submission attempts to solve the problem by counting character frequencies and constructing the result from the halves. However, the implementation has critical logic errors in handling odd-frequency characters and building the second half, which coincidentally pass the examples but would fail on many cases. The core idea is correct but flawed in execution.
 
 ### Complexity
-
-**Time complexity**: O(n) - The code makes several passes through the frequency array (constant size 26) and output string (length n).  
-**Space complexity**: O(n) - The output string storage dominates, plus the fixed-size frequency array.
+- **Time complexity:** O(n + 26) → O(n), where n is the length of the string. This is optimal asymptotically.
+- **Space complexity:** O(26) → O(1) for frequency array, plus O(n) for the output string.
 
 ### vs. optimal
+The optimal approach for this problem is to:
+1. Count character frequencies.
+2. Build the first half lexicographically by placing characters in ascending order, using half of each frequency.
+3. For the middle character (if any), choose the smallest character with an odd frequency.
+4. Mirror the first half to form the palindrome.
 
-The optimal approach for this problem is frequency counting followed by lexicographic construction:
-1. Count character frequencies
-2. Place characters lex smallest first on both ends
-3. Handle the odd-count character (if any) in the middle
-
-The submitted code fails because:
-- Variable `c` is used uninitialized when there's no odd-frequency character
-- The reconstruction logic incorrectly handles the second half by appending characters after the middle instead of mirroring the first half
-- It modifies frequency counts in a way that loses information needed for proper reconstruction
+This submission mistakenly:
+- Uses variable `c` to store the *last* odd-frequency character encountered, not the *smallest*. This would fail for inputs like "aabbb" (should yield "abbba", but here might yield "babab").
+- Reuses the frequency array incorrectly when building the second half: it appends remaining counts instead of mirroring the first half.
 
 ### Improvements
+1. **Fix odd-character selection:** Track the smallest character with odd frequency, not the last one.
+2. **Mirror the first half:** After building the first half, reverse it for the second half—don’t reuse frequency counts.
+3. **Use clearer loops:** Replace manual `while` loops with `string(freq[i], 'a' + i)` for conciseness.
+4. **Avoid redundant work:** Skip the second frequency loop entirely by reversing the first half.
 
-1. **Initialize critical variables**: `c` should be initialized to -1 and only set when an odd-count character is found.
-
-2. **Use proper palindrome construction**: Build the first half lex smallest, then mirror it for the second half:
-   ```cpp
-   string firstHalf = "";
-   char midChar = '\0';
-   
-   for(int i = 0; i < 26; i++) {
-       if(fre[i] % 2 == 1) {
-           midChar = 'a' + i;
-       }
-       firstHalf += string(fre[i] / 2, 'a' + i);
-   }
-   
-   string secondHalf = firstHalf;
-   reverse(secondHalf.begin(), secondHalf.end());
-   return firstHalf + (midChar ? string(1, midChar) : "") + secondHalf;
-   ```
-
-3. **Simplify frequency handling**: Don't modify the frequency array during the counting process - use the counts directly for construction.
-
-4. **Use standard library**: `std::string` constructor with character repetition is more efficient than manual loops.
+### Why the percentile is low
+The runtime percentile is low because the current logic is flawed (despite passing examples). Efficient solutions correctly mirror the first half and handle odd frequencies lexicographically. This submission’s erroneous approach would fail on hidden test cases, but even if corrected, it may still be slower due to:
+- Inefficient character-by-character appends instead of bulk string operations.
+- Extra passes over the frequency array. Optimal solutions build the result in one pass over the alphabet and mirror it instantly.
